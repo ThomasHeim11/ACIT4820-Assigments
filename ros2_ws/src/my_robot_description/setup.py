@@ -17,13 +17,15 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*')),
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
     ],
+    # Do I need this? 
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='thomas',
     maintainer_email='thomas@todo.todo',
-    description='URDF description, launch and RViz config for a '
-                'differential-drive robot with a front caster wheel.',
-    license='Apache-2.0',
+    description='TODO.',
+    license='TODO: License declaration',
+
+    # Entry points for console scripts
     entry_points={
         'console_scripts': [
             'wheel_publisher = my_robot_description.wheel_publisher:main',
