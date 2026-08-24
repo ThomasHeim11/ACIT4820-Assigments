@@ -13,8 +13,9 @@
     <param name="robot_description"
         value="$(command 'cat $(var urdf_path)')" type="str"/>
 </node>
+
 <!--Task3 used the GUI  to move the joint manually-->
-<!--node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"--> 
+<!--node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"-->
 
 <!--Task4 replaces it with a custom node that publishes wheel joint states.
 This helps wheels turn on their own-->
