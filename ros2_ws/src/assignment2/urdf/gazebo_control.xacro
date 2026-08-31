@@ -1,3 +1,32 @@
 <?xml version="1.0"?>
 
-<!---->
+<!--Everything that is Gazebo specific -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!--Friction for caster wheel set to near zero-->
+    <gazebo reference="caster_wheel">
+        <mu1>0.0</mu1>
+        <mu2>0.0</mu2>
+    </gazebo>
+<xacro:include filename="parameters.xacro"/
+    <gazebo>
+        <!--Turns cmd_vel into wheel rotation. Separation and radius
+        come from the same properties the wheels are built from,
+        so the controller and the geometry cannot disagree-->
+        <plugin filename="gz-sim-diff-drive-system"
+                name="gz::sim::systems::DiffDrive">
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+            <wheel_separation>${wheel_separation}</wheel_separation>
+            <wheel_radius>${wheel_radius}</wheel_radius>
+            <odom_publish_frequency>50</odom_publish_frequency>
+            <topic>cmd_vel</topic>
+        </plugin>
+
+        <!--Publishes the wheel joint angles that Gazebo computes
+        from physics, so RViz can show the wheels turning-->
+        <plugin filename="gz-sim-joint-state-publisher-system"
+                name="gz::sim::systems::JointStatePublisher">
+            <topic>joint_states</topic>
+        </plugin>
+    </gazebo>
+</robot>
