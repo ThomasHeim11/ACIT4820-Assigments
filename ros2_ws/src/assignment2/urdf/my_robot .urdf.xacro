@@ -78,8 +78,8 @@ position-->
 </link>
 
 <!--============================ JOINTS ===========================-->
-<!--One wheel radius up, which is where the axle sits when the wheels
-touch the floor.-->
+<!--Lifts the body off the ground. The lift is one wheel radius, so the
+wheels end up resting exactly on the floor.-->
 <joint name="base_joint" type="fixed">
   <parent link="base_footprint"/>
   <child link="base_link"/>
@@ -94,8 +94,7 @@ touch the floor.-->
 </joint>
 
 <!--============================ WHEELS ===========================-->
-<!--Each call expands to a wheel link and its joint. Same axle, mirrored
-either side of the centre line.-->
+<!--The two drive wheels, both built from the macros-->
 
 <xacro:drive_wheel prefix="left" x_offset="${wheel_x_offset}"
                    y_offset="${wheel_separation/2}"/>
