@@ -15,6 +15,14 @@ position-->
       </geometry>
       <material name="dark_grey"/>
     </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_cylinder mass="${wheel_mass}" radius="${wheel_radius}"
+                             length="${wheel_thickness}"/>
   </link>
 
    <!--The rpy lays the cylinder flat and points its z sideways, making z
@@ -41,6 +49,14 @@ position-->
     </geometry>
     <material name="blue"/>
   </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <box size="${base_length} ${base_width} ${base_height}"/>
+    </geometry>
+  </collision>
+  <xacro:inertial_box mass="${base_mass}" length="${base_length}"
+                      width="${base_width}" height="${base_height}"/>
 </link>
 
 <!--Front caster-->
@@ -52,6 +68,14 @@ position-->
     </geometry>
     <material name="light_grey"/>
   </visual>
+
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <sphere radius="${caster_radius}"/>
+    </geometry>
+  </collision>
+  <xacro:inertial_sphere mass="${caster_mass}" radius="${caster_radius}"/>
 </link>
 
 <!--============================ JOINTS ===========================-->

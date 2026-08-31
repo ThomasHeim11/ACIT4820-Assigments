@@ -7,7 +7,7 @@
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
-<xacro:include filename="parameters.xacro"/
+
     <gazebo>
         <!--Turns cmd_vel into wheel rotation. Separation and radius
         come from the same properties the wheels are built from,
