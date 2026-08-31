@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--Dimensions and materials. Included first, because everything below it
+refers to these values.-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--Every dimension is written once here-->
+<!--Chassis box-->
+<xacro:property name="base_length" value="0.6"/>
+<xacro:property name="base_width" value="0.4"/>
+<xacro:property name="base_height" value="0.1"/>
+<!--Drive wheels-->
+<xacro:property name="wheel_radius" value="0.1"/>
+<xacro:property name="wheel_thickness" value="0.1"/>
+<!--How far behind the chassis centre the wheel sit-->
+<xacro:property name="wheel_x_offset" value="-0.1"/>
+<!--Distance between the two wheel centres-->
+<xacro:property name="wheel_separation" value="${base_width + wheel_thickness}"/>
+<!--Front caster-->
+<xacro:property name="caster_radius" value="0.05"/>
+<xacro:property name="caster_x_offset" value="0.2"/>
+
+<!--Materials-->
+<material name="blue">
+  <color rgba="0.2 0.4 0.8 1.0"/>
+</material>
+<material name="dark_grey">
+  <color rgba="0.2 0.2 0.2 1.0"/>
+</material>
+<material name="light_grey">
+  <color rgba="0.7 0.7 0.7 1.0"/>
+</material>
+
+</robot>

@@ -1,106 +1,15 @@
 <?xml version="1.0"?>
+<!--Assignment 2. Top level of the robot description. This file holds no
+content of its own, it only pulls the parts together in order.-->
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
-<!--Every dimension is written once here-->
-<!--Chassis box-->
-<xacro:property name="base_length" value="0.6"/>
-<xacro:property name="base_width" value="0.4"/>
-<xacro:property name="base_height" value="0.1"/>
-<!--Drive wheels-->
-<xacro:property name="wheel_radius" value="0.1"/>
-<xacro:property name="wheel_thickness" value="0.1"/>
-<!--How far behind the chassis centre the wheel sit-->
-<xacro:property name="wheel_x_offset" value="-0.1"/>
-<!--Distance between the two wheel centres-->
-<xacro:property name="wheel_separation" value="${base_width + wheel_thickness}"/>
-<!--Front caster-->
-<xacro:property name="caster_radius" value="0.05"/>
-<xacro:property name="caster_x_offset" value="0.2"/>
 
-<!--Materials-->
-<material name="blue">
-  <color rgba="0.2 0.4 0.8 1.0"/>
-</material>
-<material name="dark_grey">
-  <color rgba="0.2 0.2 0.2 1.0"/>
-</material>
-<material name="light_grey">
-  <color rgba="0.7 0.7 0.7 1.0"/>
-</material>
+  <!--Dimensions and materials. Must come first, since the parts below
+  refer to these values.-->
+  <xacro:include filename="parameters.urdf.xacro"/>
 
+  <!--The robot: wheel macro, links and joints.-->
+  <xacro:include filename="my_robot_core.xacro"/>
 
-<!--Wheel macro that have both the link and the joint,and takes a names and 
-position-->
-<xacro:macro name="drive_wheel" params="prefix x_offset y_offset">
-<!--The cylinder stays upright. The joint below lays it flat -->
-  <link name="${prefix}_wheel">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
-      </geometry>
-      <material name="dark_grey"/>
-    </visual>
-  </link>
+  <!--Task 2 adds gazebo_control.xacro here, Task 3 adds lidar.xacro.-->
 
-   <!--The rpy lays the cylinder flat and points its z sideways, making z
-  the rolling axis.-->
-  <joint name="${prefix}_wheel_joint" type="continuous">
-    <parent link="base_link"/>
-    <child link="${prefix}_wheel"/>
-    <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
-    <axis xyz="0 0 1"/>
-  </joint>
-
-</xacro:macro>
-
-<!--============================ LINKS ============================-->
-<!--Root of the TF tree-->
-<link name="base_footprint"/>
-
-<!--Body of the robot-->
-<link name="base_link">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <box size="${base_length} ${base_width} ${base_height}"/>
-    </geometry>
-    <material name="blue"/>
-  </visual>
-</link>
-
-<!--Front caster-->
-<link name="caster_wheel">
-  <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <geometry>
-      <sphere radius="${caster_radius}"/>
-    </geometry>
-    <material name="light_grey"/>
-  </visual>
-</link>
-
-<!--============================ JOINTS ===========================-->
-<!--Lifts the body off the ground. The lift is one wheel radius, so the
-wheels end up resting exactly on the floor.-->
-<joint name="base_joint" type="fixed">
-  <parent link="base_footprint"/>
-  <child link="base_link"/>
-  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
-</joint>
-
-<!--Drops the caster until its underside reaches the ground.-->
-<joint name="caster_joint" type="fixed">
-  <parent link="base_link"/>
-  <child link="caster_wheel"/>
-  <origin xyz="${caster_x_offset} 0 ${caster_radius - wheel_radius}" rpy="0 0 0"/>
-</joint>
-
-<!--============================ WHEELS ===========================-->
-<!--The two drive wheels, both built from the macros-->
-
-<xacro:drive_wheel prefix="left" x_offset="${wheel_x_offset}"
-                   y_offset="${wheel_separation/2}"/>
-
-<xacro:drive_wheel prefix="right" x_offset="${wheel_x_offset}"
-                   y_offset="${-wheel_separation/2}"/>
 </robot>
