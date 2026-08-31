@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--Task 3 and 4-->
+
+<launch>
+<!--Paths resolved from the installed package. The package name is written
+once here and reused below.-->
+<let name="pkg_share" value="$(find-pkg-share assignment1)"/>
+<let name="urdf_path" value="$(var pkg_share)/urdf/my_robot.urdf"/>
+<let name="rviz_config" value="$(var pkg_share)/rviz/urdf_config.rviz"/>
+
+<!--Publishes the URDF on /robot_description and broadcasts TF-->
+<node pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description"
+        value="$(command 'cat $(var urdf_path)')" type="str"/>
+</node>
+
+<!--Task 3 used the GUI to move the joints manually-->
+<!--node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"-->
+
+<!--Task 4 replaces it with a custom node that publishes wheel joint states.
+This helps wheels turn on their own-->
+<node pkg="assignment1" exec="wheel_publisher"/>
+
+<!--RViz with the saved config: fixed frame base_footprint-->
+<node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)"/>
+
+</launch>

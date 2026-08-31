@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'my_robot_description'
+package_name = 'assignment1'
 
 setup(
     name=package_name,
@@ -28,7 +28,7 @@ setup(
     # Entry points for console scripts
     entry_points={
         'console_scripts': [
-            'wheel_publisher = my_robot_description.wheel_publisher:main',
+            'wheel_publisher = assignment1.wheel_publisher:main',
         ],
     },
 )
