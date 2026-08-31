@@ -15,5 +15,23 @@
         <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
         <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
 
+        <!-- Needed before any sensor produces data-->
+        <plugin filename="gz-sim-sensor-system" name="gz::sim::system::Sensor">
+            <render_engine>orge2</render_engine>
+        </plugin>
+        <ligth type="directional" name="sun">
+            <pose> 0 0 10 0 0 0</pose>
+        </ligth>
+
+        <!--Floor-->
+        <model name="ground_plane">
+            <static>true</static>
+            <link name="link">
+                <collision name="collision">
+                    <geometry>
+                        <plan><normal>0 0 1</normal><size>100 100</size></plane>
+                    </geometry>
+                </collision>
+
 
 
