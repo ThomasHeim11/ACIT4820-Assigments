@@ -1,6 +1,19 @@
 <?xml version="1.0" ?>
 
 <!--Ground plane and three shapes scattered around the origin.-->
+<sdf version="1.8">
+    <world name="assigment2_world">
+        
+        <physics name"1ms" type="ignored">
+            <max_step_size>0.001</max_step_size>
+            <real_time_factor>1.0</real_time_factor>
+        </physics>
+
+        <!--Physics steps the simulation, UserCommands handle spawning models,
+        SceneBroadcaster sends the scene out to the GUI and to RViz-->
+        <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+        <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+        <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
 
 
 
