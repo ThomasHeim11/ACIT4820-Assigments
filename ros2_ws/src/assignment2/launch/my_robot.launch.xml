@@ -5,13 +5,15 @@
 <!--Paths resolved from the installed package. The package name is written
 once here and reused below.-->
 <let name="pkg_share" value="$(find-pkg-share assignment2)"/>
-<let name="urdf_path" value="$(var pkg_share)/urdf/my_robot.urdf"/>
+<let name="xacro_path" value="$(var pkg_share)/urdf/my_robot.urdf.xacro"/>
 <let name="rviz_config" value="$(var pkg_share)/rviz/urdf_config.rviz"/>
 
-<!--Publishes the URDF on /robot_description and broadcasts TF-->
+<!--Publishes the URDF on /robot_description and broadcasts TF. The
+description is now a xacro file, so it is expanded to plain URDF here
+instead of being read straight off disk.-->
 <node pkg="robot_state_publisher" exec="robot_state_publisher">
     <param name="robot_description"
-        value="$(command 'cat $(var urdf_path)')" type="str"/>
+        value="$(command 'xacro $(var xacro_path)')" type="str"/>
 </node>
 
 <!--Task 3 used the GUI to move the joints manually-->

@@ -2,19 +2,19 @@
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 <!--Every dimension is written once here-->
 <!--Chassis box-->
-<xarco:property name="base_length" value="0.6"/>
-<xarco:property name="base_width" value="0.4"/>
-<xarco:property name="base_height" value="0.1"/>
+<xacro:property name="base_length" value="0.6"/>
+<xacro:property name="base_width" value="0.4"/>
+<xacro:property name="base_height" value="0.1"/>
 <!--Drive wheels-->
-<xarco:property name="wheel_radius" value="0.1"/>
-<xarco:property name="wheel_thickness" value="0.1"/>
+<xacro:property name="wheel_radius" value="0.1"/>
+<xacro:property name="wheel_thickness" value="0.1"/>
 <!--How far behind the chassis centre the wheel sit-->
 <xacro:property name="wheel_x_offset" value="-0.1"/>
 <!--Distance between the two wheel centres-->
 <xacro:property name="wheel_separation" value="${base_width + wheel_thickness}"/>
 <!--Front caster-->
 <xacro:property name="caster_radius" value="0.05"/>
-<xacro:property name="caster_thickness" value="0.02"/>
+<xacro:property name="caster_x_offset" value="0.2"/>
 
 <!--Materials-->
 <material name="blue">
@@ -44,16 +44,18 @@ position-->
 
    <!--The rpy lays the cylinder flat and points its z sideways, making z
   the rolling axis.-->
-  <joint name=${prefix}_wheel_joint" type="continuous">
+  <joint name="${prefix}_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="${prefix}_wheel"/>
-    <origin xyz=""${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
+    <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
+</xacro:macro>
+
 <!--============================ LINKS ============================-->
 <!--Root of the TF tree-->
-<link name="base_footprint">
+<link name="base_footprint"/>
 
 <!--Body of the robot-->
 <link name="base_link">
