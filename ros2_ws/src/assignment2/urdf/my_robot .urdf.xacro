@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<!--Every dimension is written once here-->
+<!--Chassis box-->
+<xarco:property name="base_length" value="0.6"/>
+<xarco:property name="base_width" value="0.4"/>
+<xarco:property name="base_height" value="0.1"/>
+<!--Drive wheels-->
+<xarco:property name="wheel_radius" value="0.1"/>
+<xarco:property name="wheel_thickness" value="0.1"/>
+<!--How far behind the chassis centre the wheel sit-->
+<xacro:property name="wheel_x_offset" value="-0.1"/>
+<!--Distance between the two wheel centres-->
+<xacro:property name="wheel_separation" value="${base_width + wheel_thickness}"/>
+<!--Front caster-->
+<xacro:property name="caster_radius" value="0.05"/>
+<xacro:property name="caster_thickness" value="0.02"/>
