@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--Assignment 2. Top level of the robot description. This file holds no
+<!-- Top level of the robot description. This file holds no
 content of its own, it only pulls the parts together in order.-->
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
