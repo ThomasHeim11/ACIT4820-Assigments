@@ -76,8 +76,30 @@ position-->
     <material name="light_grey"/>
   </visual>
 </link>
+
 <!--============================ JOINTS ===========================-->
+<!--One wheel radius up, which is where the axle sits when the wheels
+touch the floor.-->
+<joint name="base_joint" type="fixed">
+  <parent link="base_footprint"/>
+  <child link="base_link"/>
+  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+</joint>
 
-
+<!--Drops the caster until its underside reaches the ground.-->
+<joint name="caster_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="caster_wheel"/>
+  <origin xyz="${caster_x_offset} 0 ${caster_radius - wheel_radius}" rpy="0 0 0"/>
+</joint>
 
 <!--============================ WHEELS ===========================-->
+<!--Each call expands to a wheel link and its joint. Same axle, mirrored
+either side of the centre line.-->
+
+<xacro:drive_wheel prefix="left" x_offset="${wheel_x_offset}"
+                   y_offset="${wheel_separation/2}"/>
+
+<xacro:drive_wheel prefix="right" x_offset="${wheel_x_offset}"
+                   y_offset="${-wheel_separation/2}"/>
+</robot>
