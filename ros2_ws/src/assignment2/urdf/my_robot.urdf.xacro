@@ -13,6 +13,7 @@ content of its own, it only pulls the parts together in order.-->
   <!--Gazebo specific settings: friction and the simulation plugins.-->
   <xacro:include filename="gazebo_control.xacro"/>
 
-  <!--Task 2 adds gazebo_control.xacro here, Task 3 adds lidar.xacro.-->
+  <!--LiDAR link, joint and sensor.-->
+  <xacro:include filename="lidar.xacro"/>
 
 </robot>

@@ -65,6 +65,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        lidar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         right_wheel:
           Alpha: 1
           Show Axes: false
@@ -93,9 +98,9 @@ Visualization Manager:
           Value: true
         left_wheel:
           Value: true
-        my_robot/base_footprint:
+        lidar_link:
           Value: true
-        my_robot/odom:
+        odom:
           Value: true
         right_wheel:
           Value: true
@@ -109,9 +114,7 @@ Visualization Manager:
           base_link:
             caster_wheel:
               {}
-            left_wheel:
-              {}
-            right_wheel:
+            lidar_link:
               {}
       Update Interval: 0
       Value: true
@@ -147,10 +150,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.03499985113739967
+      Pitch: 0.3849997818470001
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 1.0650017261505127
+      Yaw: 0.19000175595283508
     Saved: ~
 Window Geometry:
   Displays:
