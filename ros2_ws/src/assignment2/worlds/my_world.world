@@ -17,12 +17,30 @@
 
         <!-- Needed before any sensor produces data-->
         <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
-            <render_engine>ogre2</render_engine>
+            <!--ogre2 renders black in this VM, ogre v1 works.-->
+            <render_engine>ogre</render_engine>
         </plugin>
 
+        <!--TODO: this is the black one-->
+        <!--
         <light type="directional" name="sun">
             <pose>0 0 10 0 0 0</pose>
+        </light>-->
+
+         <scene>
+            <ambient>0.6 0.6 0.6 1</ambient>
+            <background>0.9 0.9 0.9 1</background>
+            <shadows>true</shadows>
+        </scene>
+
+        <light type="directional" name="sun">
+            <cast_shadows>true</cast_shadows>
+            <pose>0 0 10 0 0 0</pose>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <direction>-0.5 0.1 -0.9</direction>
         </light>
+            
 
         <!--Floor-->
         <model name="ground_plane">
@@ -37,6 +55,10 @@
                     <geometry>
                         <plane><normal>0 0 1</normal><size>100 100</size></plane>
                     </geometry>
+                    <material>
+                        <ambient>0.8 0.8 0.8 1</ambient>
+                        <diffuse>0.8 0.8 0.8 1</diffuse>
+                    </material>
                 </visual>
             </link>
         </model>
@@ -55,6 +77,10 @@
                 </collision>
                 <visual name="visual">
                     <geometry><box><size>1 1 1</size></box></geometry>
+                    <material>
+                        <ambient>0.8 0.2 0.2 1</ambient>
+                        <diffuse>0.8 0.2 0.2 1</diffuse>
+                    </material>
                 </visual>
             </link>
         </model>
@@ -73,6 +99,10 @@
                     <geometry>
                         <cylinder><radius>0.5</radius><length>1.0</length></cylinder>
                     </geometry>
+                    <material>
+                        <ambient>0.2 0.6 0.3 1</ambient>
+                        <diffuse>0.2 0.6 0.3 1</diffuse>
+                    </material>
                 </visual>
             </link>
         </model>
@@ -87,6 +117,10 @@
                 </collision>
                 <visual name="visual">
                     <geometry><sphere><radius>0.5</radius></sphere></geometry>
+                    <material>
+                        <ambient>0.9 0.7 0.1 1</ambient>
+                        <diffuse>0.9 0.7 0.1 1</diffuse>
+                    </material>
                 </visual>
             </link>
         </model>

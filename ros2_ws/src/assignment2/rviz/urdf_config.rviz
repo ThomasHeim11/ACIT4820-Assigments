@@ -1,14 +1,14 @@
 Panels:
   - Class: rviz_common/Displays
+    Help Height: 70
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /TF1
       Splitter Ratio: 0.5
-    Tree Height: 600
+    Tree Height: 572
 Visualization Manager:
   Class: ""
-  Name: root
   Displays:
     - Alpha: 0.5
       Cell Size: 1
@@ -16,7 +16,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -28,7 +28,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.699999988079071
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
       Description File: ""
@@ -40,17 +40,79 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /robot_description
       Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
       Name: RobotModel
-      Visual Enabled: true
+      TF Prefix: ""
+      Update Interval: 0
       Value: true
+      Visual Enabled: true
     - Class: rviz_default_plugins/TF
       Enabled: true
+      Filter (blacklist): ""
+      Filter (whitelist): ""
       Frame Timeout: 15
-      Marker Scale: 0.3
+      Frames:
+        All Enabled: true
+        base_footprint:
+          Value: true
+        base_link:
+          Value: true
+        caster_wheel:
+          Value: true
+        left_wheel:
+          Value: true
+        my_robot/base_footprint:
+          Value: true
+        my_robot/odom:
+          Value: true
+        right_wheel:
+          Value: true
+      Marker Scale: 0.30000001192092896
       Name: TF
       Show Arrows: false
       Show Axes: true
       Show Names: true
+      Tree:
+        base_footprint:
+          base_link:
+            caster_wheel:
+              {}
+            left_wheel:
+              {}
+            right_wheel:
+              {}
       Update Interval: 0
       Value: true
   Enabled: true
@@ -70,21 +132,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.2
+      Distance: 2.200000047683716
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
       Focal Point:
         X: 0
         Y: 0
-        Z: 0.1
+        Z: 0.10000000149011612
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
       Name: Current View
-      Pitch: 0.4
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.03499985113739967
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz_default_plugins)
-      Yaw: 0.9
+      Yaw: 1.0650017261505127
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Height: 800
-  Width: 1200
   Hide Left Dock: false
   Hide Right Dock: true
+  QMainWindow State: 000000ff00000000fd000000010000000000000156000002c2fc0200000001fb000000100044006900730070006c006100790073010000003f000002c2000000cc00ffffff00000354000002c200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Width: 1200
+  X: 111
+  Y: 89

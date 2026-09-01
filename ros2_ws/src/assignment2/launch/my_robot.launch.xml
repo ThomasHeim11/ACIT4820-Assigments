@@ -14,8 +14,10 @@ robot spawned into it, the bridge between Gazebo and ROS2, and RViz-->
 
 <!--gz_server computes the physics, gz_client draws it. The client can be
 skipped when only RViz is needed.-->
-<executable cmd="gz sim -s -r $(var world_path)" name="gz_server" output="screen"/>
-<executable cmd="gz sim -g" name="gz_client" output="screen"
+<!--ogre v1 is forced because the default ogre2 renders a black scene here.-->
+<executable cmd="gz sim -s -r --render-engine ogre $(var world_path)"
+            name="gz_server" output="screen"/>
+<executable cmd="gz sim -g --render-engine-gui ogre" name="gz_client" output="screen"
             unless="$(var headless)"/>
 
 <!--Expands the xacro, publishes it on /robot_description, and turns joint

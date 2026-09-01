@@ -20,6 +20,10 @@
             <wheel_radius>${wheel_radius}</wheel_radius>
             <odom_publish_frequency>50</odom_publish_frequency>
             <topic>cmd_vel</topic>
+            <!--Without these the frames are named after the model, and RViz
+            cannot join them to the tree robot_state_publisher provides.-->
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
         </plugin>
 
         <!--Publishes the wheel joint angles that Gazebo computes
