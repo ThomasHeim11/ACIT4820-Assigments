@@ -64,7 +64,7 @@
 
 \begin{document}
 
-\title{ACIT4820: Assignment 2 \\[4pt] \normalsize \textit{Total words: }}
+\title{ACIT4820: Assignment 2 \\[4pt] \normalsize \textit{Total words:1335 }}
 
 \author{
     \IEEEauthorblockN{Felix Boehm}
@@ -77,16 +77,13 @@
 \maketitle
 
 \section{Method}
-For task 1, we decided to make macros for the wheel as there was a lot of repetition. We replaced both with one drive\_wheel macro that has the link and the joint and takes a prefix and a position, and then called it twice. We also made macros for the inertia tensors. We made inertial\_box, inertial\_cylinder and inertial\_sphere, that take a mass and the dimensions and make up the whole inertial block. The wheels benefited from using macros since this is the structure in the robot that repeats. This makes sure that we have the same dimensions for the back wheels. The inertia macros were useful as the three formulas are used across four links. This makes the code more modular, as we don't have to hardcode the numbers. 
+For Task 1, we decided to make macros for the wheel as there was a lot of repetition. We replaced both wheels with one drive\_wheel macro that has the link and the joint and takes a prefix and a position, and then called it twice. We also made macros for the inertia tensors. We made inertial\_box, inertial\_cylinder and inertial\_sphere, that take a mass and the dimensions and make up the whole inertial block. The wheels benefited from using macros since this is the structure in the robot that repeats. This makes sure that we have the same dimensions for the back wheels. The inertia macros were useful as the three formulas are used across four links. This makes the code more modular, as we don't have to hardcode the numbers. 
 
-Task 2: 
+For task 2, we set the caster friction to zero since it's a fixed sphere, so it could move. The alternative could be to make the caster with its own joint, but we decided not to do it as that would be more work than necessary for getting the robot to move. 
 
+For Task 3, we first set the lidar to 360 degrees because it scanned more, but we later changed it to 640 samples over plus-minus 80 degrees that the Gazebo documentation uses, so that our configurations matched what the assignment pointed to. For the LiDAR itself, we added a cylindrical lidar\_link on top of the chassis with a fixed joint. We got the joint height from half the chassis height plus half the sensor height, rather than hardcoding it. We did this because it is more modular, in case we want to change the dimensions of e.g. the chassis in the future.
 
-For Task 3, we set the lidar laser first to 360 degrees because it scanned more, but we later changed it to 640 samples over plus-minus 80 degrees that the Gazebo documentation uses, so that our configurations matched what the assignment pointed to. For the radar itself, we added a cylindrical lidar\_link on top of the chassis with a fixed joint. We got the joint height from half the chassis height plus half the sensor height, rather than hardcoding it. We did this as this is more modular, in case we want to change the dimensions of e.g. the chassis in the future.
-
-Task 4: 
-
-
+For task 4, we set the style to spheres and the size to 0.1, because the default of 0.01 was to small to see against the background. We then used the intensity colour transformer with rainbow to match the settings in the assignment screenshots. 
 
 \section{Results}
 \subsection*{Task 1: Modularising with Xacro}
@@ -171,7 +168,7 @@ we wrote one macro per shape instead of typing six numbers per link.
 \end{figure}
 %TC:endignore
 
- my\_robot\_core.xacro have the links and joints. The two
+my\_robot\_core.xacro holds the links and joints. The two
 wheels were the only repeated structure in the robot, differing just in their
 name and the sign of the y offset, so one macro now produces both, as shown in
 Fig.~\ref{lst:wheelmacro}.
@@ -219,12 +216,11 @@ Fig.~\ref{lst:wheelmacro}.
 
 
 
------
 The world holds a ground plane and three static obstacles, and declares the
 system plugins Gazebo needs, as shown in Fig.~\ref{lst:worldplugins}. Physics
 steps the simulation, UserCommands handles spawning, SceneBroadcaster sends the
-scene out, and the sensors system is required before any sensor produces data..
-----
+scene out, and the sensors system is required before any sensor produces data.
+
 %TC:ignore
 \begin{figure}[H]
 \begin{minted}{xml}
@@ -490,13 +486,15 @@ more rays fall on the surface.
 \end{figure}
 
 \section{Reflection}
-As with the last assignment, we had some frustrating fun implementing assignment 2. For task 1, we had problems with the launch file. 
+As with the last assignment, we had some frustrating fun implementing assignment 2. For Task 1, we had problems with the launch file. 
 We had apparently made some mistakes that made the RViz visualization of our robot show that the back wheels were gone. It turned out that we had made errors both in the macros we made and in how the launch file handled the new macros. We also split the .urdf into different files, and that caused some confusion in the beginning. We tried running xacro on parameters.xacro and my\_robot\_core.xacro, and then we got errors that told us the properties like wheel\_radius were not defined. We later discovered that this was not a bug and that properties are defined in parameters.xacro, and the other files only use them. So on their own, they don't know what the values are. We discovered that xacro reads top to bottom, so a value has to exist before it is used. This is why my\_robot.urdf.xacro includes parameters.xacro first.
 
-For task 2, we had problems with the fact that we made the world too dark, and we tried to fix it for some time, but the visualization in Gazebo was still dark. It turned out that we still had a stalled run in the background that was overwriting the new run. We probably spent 1 hour debugging this interesting issue. We then finally checked the running process and found that four Gazebo servers were running at the same time, because it looked like Ctrl+C on the launch file did not kill the Gazebo sim process. The window we were looking at was showing a robot from a session we started 2 hours earlier. This also explained why the robot was stuck at an obstacle, and the world was using dark colors. We also had some problems with the bridge that made the visualization in RViz give us warnings. The first error we made was that we forgot to add a dash in front of each entry in the config file itself. For the keyboard integration, it took us some time to get the integration correct, as the robot would not drive. Part of this was the stale Gazebo servers, since our commands were going to one server while we were looking at another. Lastly, we tried to do the commands in the Gazebo window, but the robot did not move, as we needed to paste the commands in the running terminal. 
+For Task 2, we had problems with the fact that we made the world too dark, and we tried to fix it for some time, but the visualization in Gazebo was still dark. It turned out that we still had a stalled run in the background that was overwriting the new run. We probably spent 1 hour debugging this interesting issue. We then finally checked the running process and found that four Gazebo servers were running at the same time, because it looked like Ctrl+C on the launch file did not kill the Gazebo sim process. The window we were looking at was showing a robot from a session we started 2 hours earlier. This also explained why the robot was stuck at an obstacle, and the world was using dark colors. We also had some problems with the bridge that made the visualization in RViz give us warnings. The first error we made was that we forgot to add a dash in front of each entry in the config file itself. For the keyboard integration, it took us some time to get the integration correct, as the robot would not drive. Part of this was the stale Gazebo servers, since our commands were going to one server while we were looking at another. Lastly, we tried to do the commands in the Gazebo window, but the robot did not move, as we needed to paste the commands in the running terminal. 
 
-For task 3, we used some time to get the LiDAR Sensor correctly mounted on top of the robot according to the task description. For a while, we thought the sensor itself was broken because checking the topic showed no publisher at all, but this was the stale servers from task 2. We also experienced the VM freezing when running Gazebo. We fixed this by checking leftover simulation processes and killing them before launching again. 
+For Task 3, we used some time to get the LiDAR sensor correctly mounted on top of the robot according to the task description. For a while, we thought the sensor itself was broken because checking the topic showed no publisher at all, but this was the stale servers from task 2. We also experienced the VM freezing when running Gazebo. We fixed this by checking leftover simulation processes and killing them before launching again. 
 
-Lastly, for task 4, we used some time to get the visualisation in RViz correct. We thought that we had gotten it correct but did not understand how to show it visually. After looking at the task description and screenshots attached to the assignment, we saw which setting we needed to enable. The last thing we did not do properly was that in the settings we did not set the topic to /scan. After that, the visualization finally worked. 
+Lastly, for Task 4, we used some time to get the visualization in RViz correct. We thought that we had gotten it correct but did not understand how to show it visually. After looking at the task description and screenshots attached to the assignment, we saw which setting we needed to enable. The last thing we did not do properly was that in the settings, we did not set the topic to /scan. After that, the visualization finally worked. 
 
+\section{Use of AI}
+We used AI to help us debug the errors we got while implementing the different tasks, and also to help us format the figures in the report. Other than that, we wrote and implemented everything ourselves.
 \end{document}
