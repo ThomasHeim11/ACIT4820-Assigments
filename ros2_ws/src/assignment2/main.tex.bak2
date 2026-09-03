@@ -1,0 +1,499 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage[newfloat]{minted}
+\pagestyle{plain}
+
+\setminted{
+    fontsize=\scriptsize,
+    breaklines=true,
+    bgcolor=gray!8,
+    frame=none,
+    xleftmargin=6pt
+}
+
+\lstdefinestyle{code}{
+    backgroundcolor=\color{gray!8},
+    basicstyle=\ttfamily\scriptsize,
+    keywordstyle=\color{green!45!black}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{red!60!black},
+    breaklines=true,
+    breakatwhitespace=false,
+    postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
+    frame=none,
+    numbers=none,
+    showstringspaces=false,
+    captionpos=b,
+    columns=fullflexible,
+    keepspaces=true,
+    xleftmargin=8pt,
+    framexleftmargin=8pt,
+    aboveskip=6pt,
+    belowskip=6pt
+}
+\lstset{style=code}
+
+% Plain style for the file tree
+\lstdefinestyle{plain}{
+    backgroundcolor=\color{gray!8},
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=none,
+    numbers=none,
+    showstringspaces=false,
+    xleftmargin=8pt,
+    framexleftmargin=8pt,
+    aboveskip=6pt,
+    belowskip=6pt
+}
+
+\raggedbottom
+
+% Keep the word counter out of the code listings. Without this it reads the
+% ${...} in the xacro snippets as maths and errors out.
+%TC:envir minted [] ignore
+%TC:envir listing [] ignore
+
+\begin{document}
+
+\title{ACIT4820: Assignment 2 \\[4pt] \normalsize \textit{Total words: }}
+
+\author{
+    \IEEEauthorblockN{Felix Boehm}
+    \IEEEauthorblockA{OsloMet \\ feboe8099@oslomet.no}
+     \and
+    \IEEEauthorblockN{Thomas Heim}
+    \IEEEauthorblockA{OsloMet \\ thhei7342@oslomet.no}
+}
+
+\maketitle
+
+\section{Method}
+For task 1, we decided to make macros for the wheel as there was a lot of repetition. We replaced both with one drive\_wheel macro that has the link and the joint and takes a prefix and a position, and then called it twice. We also made macros for the inertia tensors. We made inertial\_box, inertial\_cylinder and inertial\_sphere, that take a mass and the dimensions and make up the whole inertial block. The wheels benefited from using macros since this is the structure in the robot that repeats. This makes sure that we have the same dimensions for the back wheels. The inertia macros were useful as the three formulas are used across four links. This makes the code more modular, as we don't have to hardcode the numbers. 
+
+Task 2: 
+
+
+For Task 3, we set the lidar laser first to 360 degrees because it scanned more, but we later changed it to 640 samples over plus-minus 80 degrees that the Gazebo documentation uses, so that our configurations matched what the assignment pointed to. For the radar itself, we added a cylindrical lidar\_link on top of the chassis with a fixed joint. We got the joint height from half the chassis height plus half the sensor height, rather than hardcoding it. We did this as this is more modular, in case we want to change the dimensions of e.g. the chassis in the future.
+
+Task 4: 
+
+
+
+\section{Results}
+\subsection*{Task 1: Modularising with Xacro}
+
+The description is split into five files. Only my\_robot.urdf.xacro can be
+expanded on its own, since it includes the others in order. The remaining four
+are fragments that use properties defined in parameters.xacro.
+
+\begin{listing}[H]
+\begin{minted}{text}
+urdf/
+|-- my_robot.urdf.xacro   orchestrator, only includes the others
+|-- parameters.xacro      dimensions, materials and macros
+|-- my_robot_core.xacro   the links and joints
+|-- gazebo_control.xacro  friction and the Gazebo plugins
+`-- lidar.xacro           the LiDAR link and its sensor
+\end{minted}
+\caption{The five files making up the robot description.}
+\label{lst:tree}
+\end{listing}
+
+The top file has no robot parts of its own. It is only the four includes, in
+the order they have to be read, and the robot name.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="parameters.xacro"/>
+  <xacro:include filename="my_robot_core.xacro"/>
+  <xacro:include filename="gazebo_control.xacro"/>
+  <xacro:include filename="lidar.xacro"/>
+</robot>
+\end{minted}
+\caption{The whole of my\_robot.urdf.xacro.}
+\label{lst:toplevel}
+\end{listing}
+
+Every dimension is declared once as a property. Values that follow from another
+value are computed rather than written out, so the wheels stay outside the
+chassis walls even if we resize the body.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<xacro:property name="base_width" value="0.4"/>
+<xacro:property name="wheel_radius" value="0.1"/>
+<xacro:property name="wheel_thickness" value="0.1"/>
+<xacro:property name="wheel_separation"
+                value="${base_width + wheel_thickness}"/>
+\end{minted}
+\caption{Properties from parameters.xacro. wheel\_separation is derived rather
+         than hardcoded.}
+\label{lst:props}
+\end{listing}
+
+parameters.xacro also holds the inertia macros. The same three formulas are
+used across four links, so we wrote one macro per shape instead of typing six
+numbers per link.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<xacro:macro name="inertial_cylinder" params="mass radius length">
+  <inertial>
+    <mass value="${mass}"/>
+    <inertia ixx="${mass*(3*radius*radius + length*length)/12}"
+             ixy="0" ixz="0"
+             iyy="${mass*(3*radius*radius + length*length)/12}"
+             iyz="0"
+             izz="${mass*radius*radius/2}"/>
+  </inertial>
+</xacro:macro>
+\end{minted}
+\caption{One of the three inertia macros, from parameters.xacro.
+         inertial\_box and inertial\_sphere follow the same pattern with their
+         own formulas.}
+\label{lst:inertia}
+\end{listing}
+
+Next comes my\_robot\_core.xacro, which holds the links and joints. The two
+wheels were the only repeated structure in the robot, differing just in their
+name and the sign of the y offset, so one macro now produces both.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<xacro:macro name="drive_wheel" params="prefix x_offset y_offset">
+  <link name="${prefix}_wheel"> ... </link>
+  <joint name="${prefix}_wheel_joint" type="continuous">
+    <parent link="base_link"/>
+    <child link="${prefix}_wheel"/>
+    <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+</xacro:macro>
+
+<xacro:drive_wheel prefix="left"  x_offset="${wheel_x_offset}"
+                   y_offset="${wheel_separation/2}"/>
+<xacro:drive_wheel prefix="right" x_offset="${wheel_x_offset}"
+                   y_offset="${-wheel_separation/2}"/>
+\end{minted}
+\caption{The wheel macro and the two calls that generate both wheels, from
+         my\_robot\_core.xacro.}
+\label{lst:wheelmacro}
+\end{listing}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task1/Task1Fig.png}
+    \caption{The robot in RViz after the conversion to Xacro, unchanged from
+             Assignment 1.}
+    \label{fig:t1_rviz}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task1/Task1Terminal.png}
+    \caption{Terminal output from launching the Xacro based description.}
+    \label{fig:t1_terminal}
+\end{figure}
+
+\subsection*{Task 2: World, physics and teleoperation}
+
+The world holds a ground plane and three static obstacles, and declares the
+system plugins Gazebo needs. Physics steps the simulation, UserCommands handles
+spawning, SceneBroadcaster sends the scene out, and the sensors system is
+required before any sensor produces data.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<plugin filename="gz-sim-physics-system"
+        name="gz::sim::systems::Physics"/>
+<plugin filename="gz-sim-user-commands-system"
+        name="gz::sim::systems::UserCommands"/>
+<plugin filename="gz-sim-scene-broadcaster-system"
+        name="gz::sim::systems::SceneBroadcaster"/>
+
+<plugin filename="gz-sim-sensors-system"
+        name="gz::sim::systems::Sensors">
+  <render_engine>ogre</render_engine>
+</plugin>
+\end{minted}
+\caption{The system plugins from worlds/my\_world.world. We use ogre rather
+         than the default ogre2, which renders a black scene in our VM.}
+\label{lst:worldplugins}
+\end{listing}
+
+The launch file starts the Gazebo server with our world, spawns the robot from
+the description published on /robot\_description, and runs the bridge with the
+config file. The model name given here must match the one used in the bridge
+config.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<executable cmd="gz sim -s -r --render-engine ogre $(var world_path)"
+            name="gz_server" output="screen"/>
+
+<node pkg="ros_gz_sim" exec="create"
+      args="-topic robot_description -name my_robot -z 0.05"/>
+
+<node pkg="ros_gz_bridge" exec="parameter_bridge">
+  <param name="config_file" value="$(var bridge_config_path)"/>
+  <param name="use_sim_time" value="true"/>
+</node>
+\end{minted}
+\caption{Starting Gazebo, spawning the robot and running the bridge, from
+         launch/my\_robot.launch.xml.}
+\label{lst:launch}
+\end{listing}
+
+The differential drive plugin reads the wheel separation and radius from the
+same properties the wheels are built from, so the controller and the geometry
+cannot disagree. The two frame settings are needed because Gazebo otherwise
+names its frames after the model, which RViz cannot join to the rest of the
+transform tree.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<plugin filename="gz-sim-diff-drive-system"
+        name="gz::sim::systems::DiffDrive">
+  <left_joint>left_wheel_joint</left_joint>
+  <right_joint>right_wheel_joint</right_joint>
+  <wheel_separation>${wheel_separation}</wheel_separation>
+  <wheel_radius>${wheel_radius}</wheel_radius>
+  <odom_publish_frequency>50</odom_publish_frequency>
+  <topic>cmd_vel</topic>
+  <frame_id>odom</frame_id>
+  <child_frame_id>base_footprint</child_frame_id>
+</plugin>
+
+<plugin filename="gz-sim-joint-state-publisher-system"
+        name="gz::sim::systems::JointStatePublisher">
+  <topic>joint_states</topic>
+</plugin>
+\end{minted}
+\caption{The two Gazebo plugins, from gazebo\_control.xacro. The second
+         replaces the wheel\_publisher node we wrote in assignment 1.}
+\label{lst:diffdrive}
+\end{listing}
+
+The caster is a fixed sphere rather than a rolling joint, so with normal
+friction it drags like a brake and the robot will not move. Setting both
+coefficients to zero lets it slide instead.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<gazebo reference="caster_wheel">
+  <mu1>0.0</mu1>
+  <mu2>0.0</mu2>
+</gazebo>
+\end{minted}
+\caption{The caster friction, from gazebo\_control.xacro.}
+\label{lst:friction}
+\end{listing}
+
+Each bridge entry names the topic and message type on both sides and the
+direction it flows. Two of our six entries are shown; cmd\_vel is the only one
+going from ROS into Gazebo, the rest carry simulation output back out.
+
+\begin{listing}[H]
+\begin{minted}{yaml}
+- ros_topic_name: "cmd_vel"
+  gz_topic_name: "cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "scan"
+  gz_topic_name: "scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+\end{minted}
+\caption{Two entries from config/gz\_bridge.yaml.}
+\label{lst:bridge}
+\end{listing}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/04_GzSimKeyboard.png}
+    \caption{The robot driving in the custom world under keyboard control.}
+    \label{fig:t2_driving}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/02_KeyboardThernimal.png}
+    \caption{The teleop\_twist\_keyboard node running.}
+    \label{fig:t2_teleop}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/03_KeyboardLaunch.png}
+    \caption{The launch file bringing up Gazebo, the robot, the bridge and
+             RViz together.}
+    \label{fig:t2_launch}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/00_task2darkworld.png}
+    \caption{The world before the lighting and render engine were fixed. The
+             file validated and every plugin loaded, but the obstacles
+             rendered as black silhouettes.}
+    \label{fig:t2_dark}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/01_taskWordlDarkTerminal.png}
+    \caption{Terminal output while the world rendered black. The build
+             succeeds, but Gazebo reports that 3D is not enabled and that EGL
+             failed to create a screen.}
+    \label{fig:t2_darkterm}
+\end{figure}
+
+\subsection*{Task 3: LiDAR sensor}
+
+The LiDAR is a cylinder held on the chassis by a fixed joint. The joint height
+is derived from half the chassis height plus half the sensor height, so the
+sensor stays on the roof if either size changes.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<joint name="lidar_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="lidar_link"/>
+  <origin xyz="0 0 ${base_height/2 + lidar_length/2}" rpy="0 0 0"/>
+</joint>
+\end{minted}
+\caption{The fixed joint mounting the LiDAR, from lidar.xacro.}
+\label{lst:lidarjoint}
+\end{listing}
+
+The sensor itself sits inside a gazebo tag on lidar\_link, which URDF ignores
+and Gazebo reads. The gz\_frame\_id line is what stamps the scan with
+lidar\_link so RViz can place the points, and the scan angles are the values
+used in the Gazebo documentation.
+
+\begin{listing}[H]
+\begin{minted}{xml}
+<sensor name="lidar" type="gpu_lidar">
+  <topic>scan</topic>
+  <gz_frame_id>lidar_link</gz_frame_id>
+  <update_rate>10</update_rate>
+  <always_on>1</always_on>
+  <visualize>true</visualize>
+  <ray>
+    <scan>
+      <horizontal>
+        <samples>640</samples>
+        <min_angle>-1.396263</min_angle>
+        <max_angle>1.396263</max_angle>
+      </horizontal>
+    </scan>
+    <range>
+      <min>0.08</min>
+      <max>10.0</max>
+    </range>
+  </ray>
+</sensor>
+\end{minted}
+\caption{The LiDAR sensor block, from lidar.xacro. The single row vertical
+         scan and the resolution fields are left out for brevity.}
+\label{lst:lidar}
+\end{listing}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task3/01_GzRadar.png}
+    \caption{The LiDAR visualised in Gazebo. The rays stop at the box and leave
+             a shadow behind it, showing genuine line of sight occlusion.}
+    \label{fig:t3_gazebo}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task3/00_RadarVisual.png}
+    \caption{Our first configuration, a full 360 degree scan. We later changed
+             this to the 640 samples over plus minus 80 degrees used in the
+             Gazebo documentation.}
+    \label{fig:t3_360}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task3/02_GzRadarTerminal.png}
+    \caption{The scan publishing to ROS at around 8 Hz, which is the 10 Hz
+             sensor rate scaled by the simulation's real time factor.}
+    \label{fig:t3_hz}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task3/03_GzRadarTerminal2.png}
+    \caption{One scan message on the ROS side, confirming the frame is
+             lidar\_link and the angles match the configuration.}
+    \label{fig:t3_echo}
+\end{figure}
+
+\subsection*{Task 4: Visualising the scan in RViz}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/Task4/00_scanGz.png}
+        \caption{Gazebo}
+    \end{subfigure}
+    \\[6pt]
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/Task4/01_scanRivz.png}
+        \caption{RViz}
+    \end{subfigure}
+    \caption{The robot at a distance from the box, with the corresponding laser
+             scan in RViz.}
+    \label{fig:t4_far}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/Task4/03_closerScanGz.png}
+        \caption{Gazebo}
+    \end{subfigure}
+    \\[6pt]
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=\linewidth]{fig/Task4/02_closerScanRivs.png}
+        \caption{RViz}
+    \end{subfigure}
+    \caption{The same scene with the robot close to the box. The returns move
+             nearer to the robot and become denser, since more rays fall on the
+             surface.}
+    \label{fig:t4_near}
+\end{figure}
+
+\section{Reflection}
+As with the last assignment, we had some frustrating fun implementing assignment 2. For task 1, we had problems with the launch file. 
+We had apparently made some mistakes that made the RViz visualization of our robot show that the back wheels were gone. It turned out that we had made errors both in the macros we made and in how the launch file handled the new macros. We also split the .urdf into different files, and that caused some confusion in the beginning. We tried running xacro on parameters.xacro and my\_robot\_core.xacro, and then we got errors that told us the properties like wheel\_radius were not defined. We later discovered that this was not a bug and that properties are defined in parameters.xacro, and the other files only use them. So on their own, they don't know what the values are. We discovered that xacro reads top to bottom, so a value has to exist before it is used. This is why my\_robot.urdf.xacro includes parameters.xacro first.
+
+For task 2, we had problems with the fact that we made the world too dark, and we tried to fix it for some time, but the visualization in Gazebo was still dark. It turned out that we still had a stalled run in the background that was overwriting the new run. We probably spent 1 hour debugging this interesting issue. We then finally checked the running process and found that four Gazebo servers were running at the same time, because it looked like Ctrl+C on the launch file did not kill the Gazebo sim process. The window we were looking at was showing a robot from a session we started 2 hours earlier. This also explained why the robot was stuck at an obstacle, and the world was using dark colors. We also had some problems with the bridge that made the visualization in RViz give us warnings. The first error we made was that we forgot to add a dash in front of each entry in the config file itself. For the keyboard integration, it took us some time to get the integration correct, as the robot would not drive. Part of this was the stale Gazebo servers, since our commands were going to one server while we were looking at another. Lastly, we tried to do the commands in the Gazebo window, but the robot did not move, as we needed to paste the commands in the running terminal. 
+
+For task 3, we used some time to get the LiDAR Sensor correctly mounted on top of the robot according to the task description. For a while, we thought the sensor itself was broken because checking the topic showed no publisher at all, but this was the stale servers from task 2. We also experienced the VM freezing when running Gazebo. We fixed this by checking leftover simulation processes and killing them before launching again. 
+
+Lastly, for task 4, we used some time to get the visualisation in RViz correct. We thought that we had gotten it correct but did not understand how to show it visually. After looking at the task description and screenshots attached to the assignment, we saw which setting we needed to enable. The last thing we did not do properly was that in the settings we did not set the topic to /scan. After that, the visualization finally worked. 
+
+\end{document}
