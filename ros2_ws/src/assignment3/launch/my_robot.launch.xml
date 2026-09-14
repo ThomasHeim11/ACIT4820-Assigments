@@ -6,7 +6,7 @@ robot spawned into it, the bridge between Gazebo and ROS2, and RViz-->
 <arg name="headless" default="false"
     description="Run Gazebo without the GUI client"/>
 <!--Paths resolved from the installed package.-->
-<let name="pkg_share" value="$(find-pkg-share assignment2)"/>
+<let name="pkg_share" value="$(find-pkg-share assignment3)"/>
 <let name="xacro_path" value="$(var pkg_share)/urdf/my_robot.urdf.xacro"/>
 <let name="world_path" value="$(var pkg_share)/worlds/my_world.world"/>
 <let name="bridge_config_path" value="$(var pkg_share)/config/gz_bridge.yaml"/>

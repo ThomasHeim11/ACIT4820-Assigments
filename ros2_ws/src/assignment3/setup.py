@@ -3,7 +3,7 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'assignment2'
+package_name = 'assignment3'
 
 setup(
     name=package_name,
