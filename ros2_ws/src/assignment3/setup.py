@@ -18,6 +18,7 @@ setup(
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
         (os.path.join('share', package_name, 'worlds'), glob('worlds/*')),
         (os.path.join('share', package_name, 'config'), glob('config/*')),
+        (os.path.join('share', package_name, 'meshes'), glob('meshes/*')),
     ],
     # Do I need this? 
     install_requires=['setuptools'],
@@ -30,7 +31,7 @@ setup(
     # Entry points for console scripts
     entry_points={
         'console_scripts': [
-            'wheel_publisher = assignment2.wheel_publisher:main',
+            'wheel_publisher = assignment3.wheel_publisher:main',
         ],
     },
 )

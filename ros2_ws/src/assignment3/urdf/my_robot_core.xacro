@@ -7,7 +7,7 @@ dimensions and materials from parameters.urdf.xacro.-->
 position-->
 <xacro:macro name="drive_wheel" params="prefix x_offset y_offset">
 <!--The cylinder stays upright. The joint below lays it flat -->
-  <link name="${prefix}_wheel">
+  <link name="${prefix}_wheel_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -29,7 +29,7 @@ position-->
   the rolling axis.-->
   <joint name="${prefix}_wheel_joint" type="continuous">
     <parent link="base_link"/>
-    <child link="${prefix}_wheel"/>
+    <child link="${prefix}_wheel_link"/>
     <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
@@ -60,7 +60,7 @@ position-->
 </link>
 
 <!--Front caster-->
-<link name="caster_wheel">
+<link name="caster_wheel_link">
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
@@ -88,9 +88,9 @@ wheels end up resting exactly on the floor.-->
 </joint>
 
 <!--Drops the caster until its underside reaches the ground.-->
-<joint name="caster_joint" type="fixed">
+<joint name="caster_wheel_joint" type="fixed">
   <parent link="base_link"/>
-  <child link="caster_wheel"/>
+  <child link="caster_wheel_link"/>
   <origin xyz="${caster_x_offset} 0 ${caster_radius - wheel_radius}" rpy="0 0 0"/>
 </joint>
 

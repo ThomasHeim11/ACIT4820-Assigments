@@ -3,7 +3,7 @@
 <!--Everything that is Gazebo specific -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <!--Friction for caster wheel set to near zero-->
-    <gazebo reference="caster_wheel">
+    <gazebo reference="caster_wheel_link">
         <mu1>0.0</mu1>
         <mu2>0.0</mu2>
     </gazebo>
