@@ -84,14 +84,10 @@ We used Felix quantum computer to finish the assignment!
 \section{Results}
 
 \subsection{Task 1}
-We calculated the inertia for each link by hand. We took the shape and the size
-from the collision tag, not from the mesh. All of our values landed inside the
-$10^{-5}$ to $10^{-1}$\,kg\,m$^2$ range. Our wheel also came out at the same
+We calculated the inertia for each link. We took the shape and the size
+from the collision tag. Our wheel also had the same
 numbers as the example in the assignment text. That told us the masses and the
-dimensions were right.
-
-
-
+dimensions were correct. 
 
 \smallskip
 \textbf{\texttt{base\_link}}, cylinder, \mbox{$r=0.16$}, \mbox{$h=0.06$},
@@ -142,12 +138,9 @@ I_{zz}        &= \frac{1}{2}mr^2 \\
 
 Our wheel is turned by its joint, not inside the link. So in the wheel link's own frame the round axis is still $z$, and the symmetry term stays on $I_{zz}$. Had we rotated the geometry inside the link, it would have moved to $I_{yy}$.
 
-The physics comes from the collision tags and not from the visuals, so we
-checked them in RViz. We turned on Collision in the RobotModel display and
+We turned on Collision in the RobotModel display and
 lowered the Alpha to 0.3. Figure~\ref{fig:t1_collision} shows the result. The
-body cylinder sits inside the mesh and nothing is floating or offset. The wheel
-cylinders stick out a little on each side. That is correct, because the wheel
-mesh is thinner than the $0.025$\,m we used for the collision.
+body cylinder sits inside the mesh and nothing is floating or offset. 
 
 \begin{figure}[H]
     \centering
@@ -155,6 +148,28 @@ mesh is thinner than the $0.025$\,m we used for the collision.
     \caption{Collision overlay in RViz. The Alpha is lowered so the collision
              primitives show through the meshes.}
     \label{fig:t1_collision}
+\end{figure}
+
+Fig.~\ref{fig:t1_tf_lidar} and
+Fig.~\ref{fig:t1_tf_wheel} show the terminal output. We also saw that the wheel
+transform reads $-90$ degrees about $x$. That told us the rotation sits on the
+joint and not inside the link, which is what our inertia depends on. Both also matched, so there is no offset.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task1/01_task1.png}
+    \caption{\texttt{tf2\_echo} from \texttt{base\_link} to \texttt{lidar\_link}.}
+    \label{fig:t1_tf_lidar}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task1/02_task2.png}
+    \caption{\texttt{tf2\_echo} from \texttt{base\_link} to
+             \texttt{left\_wheel\_link}. The rotation of $-90$ degrees about
+             $x$ is the wheel joint laying the cylinder flat.}
+    \label{fig:t1_tf_wheel}
 \end{figure}
 
 \section{Reflection}
