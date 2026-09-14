@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <!--The robot itself: the wheel macro, then the links and joints. Uses the
-dimensions and materials from parameters.urdf.xacro.-->
+dimensions and materials from parameters.xacro.-->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<!--Wheel macro that have both the link and the joint,and takes a names and
-position-->
+<!--Wheel macro that holds both the link and the joint, and takes a name and
+a position-->
 <xacro:macro name="drive_wheel" params="prefix x_offset y_offset">
-<!--The cylinder stays upright. The joint below lays it flat -->
+<!--The mesh and the collision cylinder both stand upright here. The joint
+below lays them flat.-->
   <link name="${prefix}_wheel_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -24,12 +25,13 @@ position-->
                              length="${wheel_thickness}"/>
   </link>
 
-   <!--The rpy lays the cylinder flat and points its z sideways, making z
-  the rolling axis.-->
+  <!--The rpy lays the cylinder flat and points its z sideways, making z
+  the rolling axis. The height drops the wheel until it rests on the floor.-->
   <joint name="${prefix}_wheel_joint" type="continuous">
     <parent link="base_link"/>
     <child link="${prefix}_wheel_link"/>
-    <origin xyz="${x_offset} ${y_offset} 0" rpy="${-pi/2} 0 0"/>
+    <origin xyz="${x_offset} ${y_offset} ${wheel_radius - base_z}"
+            rpy="${-pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -39,7 +41,9 @@ position-->
 <!--Root of the TF tree-->
 <link name="base_footprint"/>
 
-<!--Body of the robot-->
+<!--Body of the robot. Drawn with the mesh, but its physics come from the
+collision cylinder, which is kept at exactly the height on the diagram so
+the scan plane clears the roof.-->
 <link name="base_link">
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -50,14 +54,15 @@ position-->
   <collision>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-      <box size="${base_length} ${base_width} ${base_height}"/>
+      <cylinder radius="${base_radius}" length="${base_height}"/>
     </geometry>
   </collision>
-  <xacro:inertial_box mass="${base_mass}" length="${base_length}"
-                      width="${base_width}" height="${base_height}"/>
+  <xacro:inertial_cylinder mass="${base_mass}" radius="${base_radius}"
+                           length="${base_height}"/>
 </link>
 
-<!--Front caster-->
+<!--Front caster. The only link with no mesh, so it keeps the sphere for
+both the visual and the collision.-->
 <link name="caster_wheel_link">
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -77,23 +82,24 @@ position-->
 </link>
 
 <!--============================ JOINTS ===========================-->
-<!--Lifts the body off the ground. The lift is one wheel radius, so the
-wheels end up resting exactly on the floor.-->
+<!--Lifts the body off the ground: the clearance, plus half the body, puts
+the chassis centre at its ride height.-->
 <joint name="base_joint" type="fixed">
   <parent link="base_footprint"/>
   <child link="base_link"/>
-  <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+  <origin xyz="0 0 ${base_z}" rpy="0 0 0"/>
 </joint>
 
 <!--Drops the caster until its underside reaches the ground.-->
 <joint name="caster_wheel_joint" type="fixed">
   <parent link="base_link"/>
   <child link="caster_wheel_link"/>
-  <origin xyz="${caster_x_offset} 0 ${caster_radius - wheel_radius}" rpy="0 0 0"/>
+  <origin xyz="${caster_x_offset} 0 ${caster_radius - base_z}" rpy="0 0 0"/>
 </joint>
 
 <!--============================ WHEELS ===========================-->
-<!--The two drive wheels, both built from the macros-->
+<!--The two drive wheels, both built from the macro. Half the track width
+each side of the centre line.-->
 
 <xacro:drive_wheel prefix="left" x_offset="${wheel_x_offset}"
                    y_offset="${wheel_separation/2}"/>

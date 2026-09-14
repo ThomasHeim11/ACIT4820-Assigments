@@ -13,18 +13,20 @@ Gazebo sensor that produces the scan.-->
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <cylinder radius="${lidar_radius}" length="${lidar_length}"/>
+                <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
             </geometry>
         </collision>
         <xacro:inertial_cylinder mass="${lidar_mass}" radius="${lidar_radius}"
-                                 length="${lidar_length}"/>
+                                 length="${lidar_height}"/>
     </link>
-    
-    <!--Sits on the chasis roof: half the body up, then half the sensor-->
+
+    <!--Sits on the chassis roof, ahead of centre: half the body up, then
+    half the sensor-->
     <joint name="lidar_joint" type="fixed">
         <parent link="base_link"/>
         <child link="lidar_link"/>
-        <origin xyz="0 0 ${base_height/2 + lidar_length/2}" rpy="0 0 0"/>
+        <origin xyz="${lidar_x_offset} 0 ${base_height/2 + lidar_height/2}"
+                rpy="0 0 0"/>
     </joint>
 
     <gazebo reference="lidar_link">
