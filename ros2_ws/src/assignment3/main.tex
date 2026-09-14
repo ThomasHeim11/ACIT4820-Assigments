@@ -142,6 +142,21 @@ I_{zz}        &= \frac{1}{2}mr^2 \\
 
 Our wheel is turned by its joint, not inside the link. So in the wheel link's own frame the round axis is still $z$, and the symmetry term stays on $I_{zz}$. Had we rotated the geometry inside the link, it would have moved to $I_{yy}$.
 
+The physics comes from the collision tags and not from the visuals, so we
+checked them in RViz. We turned on Collision in the RobotModel display and
+lowered the Alpha to 0.3. Figure~\ref{fig:t1_collision} shows the result. The
+body cylinder sits inside the mesh and nothing is floating or offset. The wheel
+cylinders stick out a little on each side. That is correct, because the wheel
+mesh is thinner than the $0.025$\,m we used for the collision.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task1/00_task1.png}
+    \caption{Collision overlay in RViz. The Alpha is lowered so the collision
+             primitives show through the meshes.}
+    \label{fig:t1_collision}
+\end{figure}
+
 \section{Reflection}
 
 

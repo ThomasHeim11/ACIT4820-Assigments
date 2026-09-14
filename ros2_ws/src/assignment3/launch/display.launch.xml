@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--RViz only, no Gazebo. Used to look at the robot model itself, and to
+check the collision shapes against the meshes.-->
+
+<launch>
+<!--Paths resolved from the installed package. The package name is written
+once here and reused below.-->
+<let name="pkg_share" value="$(find-pkg-share assignment3)"/>
+<let name="xacro_path" value="$(var pkg_share)/urdf/my_robot.urdf.xacro"/>
+<let name="rviz_config" value="$(var pkg_share)/rviz/urdf_config.rviz"/>
+
+<!--Expands the xacro, publishes it on /robot_description and broadcasts TF-->
+<node pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description"
+        value="$(command 'xacro $(var xacro_path)')" type="str"/>
+</node>
+
+<!--Sliders for the wheel joints. Without a joint state source the wheel
+transforms are never published and the TF tree is broken.-->
+<node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"/>
+
+<!--RViz with the saved config: fixed frame base_footprint-->
+<node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)"/>
+
+</launch>
