@@ -30,6 +30,11 @@ $(find assignment3) is the installed package path, filled in by xacro.-->
 <xacro:property name="lidar_height" value="0.01"/>
 <xacro:property name="lidar_x_offset" value="0.08"/>
 
+<!--Scan shape, taken from the arguments. Half the field of view is what the
+sensor needs, since it counts out from straight ahead in both directions.-->
+<xacro:property name="lidar_rays" value="${$(arg lidar_rays)}"/>
+<xacro:property name="lidar_half_fov" value="${radians($(arg lidar_fov)) / 2}"/>
+
 <!--============ WORKED OUT FROM THE SIZES ============-->
 <!--Height of the chassis centre above the ground. Every part below hangs
 off this one value, so raising the robot moves the whole body together.-->

@@ -32,6 +32,7 @@ setup(
     entry_points={
         'console_scripts': [
             'wheel_publisher = assignment3.wheel_publisher:main',
+            'mazerunner = assignment3.mazerunner:main',
         ],
     },
 )

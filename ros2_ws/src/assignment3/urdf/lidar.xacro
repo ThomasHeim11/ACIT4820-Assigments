@@ -39,10 +39,10 @@ Gazebo sensor that produces the scan.-->
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>640</samples>
+                        <samples>${lidar_rays}</samples>
                         <resolution>1</resolution>
-                        <min_angle>-1.396263</min_angle>
-                        <max_angle>1.396263</max_angle>
+                        <min_angle>${-lidar_half_fov}</min_angle>
+                        <max_angle>${lidar_half_fov}</max_angle>
                     </horizontal>
                     <vertical>
                         <samples>1</samples>

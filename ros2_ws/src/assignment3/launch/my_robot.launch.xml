@@ -5,6 +5,10 @@ robot spawned into it, the bridge between Gazebo and ROS2, and RViz-->
 <launch>
 <arg name="headless" default="false"
     description="Run Gazebo without the GUI client"/>
+<!--The three configurations are 120/30, 180/45 and 360/90, which all keep
+the rays about 4 degrees apart.-->
+<arg name="lidar_fov" default="180" description="Field of view in degrees"/>
+<arg name="lidar_rays" default="45" description="Number of rays"/>
 <!--Paths resolved from the installed package.-->
 <let name="pkg_share" value="$(find-pkg-share assignment3)"/>
 <let name="xacro_path" value="$(var pkg_share)/urdf/my_robot.urdf.xacro"/>
@@ -24,7 +28,8 @@ skipped when only RViz is needed.-->
 states into transforms.-->
 <node pkg="robot_state_publisher" exec="robot_state_publisher">
     <param name="robot_description"
-        value="$(command 'xacro $(var xacro_path)')" type="str"/>
+        value="$(command 'xacro $(var xacro_path) lidar_fov:=$(var lidar_fov) lidar_rays:=$(var lidar_rays)')"
+        type="str"/>
     <param name="use_sim_time" value="true"/>
 </node>
 
@@ -36,6 +41,20 @@ must match the one used in the bridge config.-->
 <!--Passes topics between Gazebo and ROS, as listed in the config file.-->
 <node pkg="ros_gz_bridge" exec="parameter_bridge">
     <param name="config_file" value="$(var bridge_config_path)"/>
+    <param name="use_sim_time" value="true"/>
+</node>
+
+<!--The wall follower. It starts paused, so nothing moves until
+"ros2 service call /toggle_pause std_srvs/srv/Trigger" is called.
+Everything that is tuned lives here, not in the node.-->
+<node pkg="assignment3" exec="mazerunner" output="screen">
+    <param name="wall_distance" value="0.45"/>
+    <param name="lookahead" value="0.35"/>
+    <param name="speed" value="0.25"/>
+    <param name="gain" value="1.6"/>
+    <param name="max_turn" value="1.2"/>
+    <param name="front_stop" value="0.55"/>
+    <param name="sector" value="8.0"/>
     <param name="use_sim_time" value="true"/>
 </node>
 

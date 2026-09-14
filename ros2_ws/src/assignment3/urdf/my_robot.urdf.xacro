@@ -3,6 +3,11 @@
 content of its own, it only pulls the parts together in order.-->
 <robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!--Scan shape of the LiDAR. Set from the launch file so the different
+  configurations can be swapped without editing the model.-->
+  <xacro:arg name="lidar_fov" default="180"/>
+  <xacro:arg name="lidar_rays" default="45"/>
+
   <!--Dimensions and materials. Must come first, since the parts below
   refer to these values.-->
   <xacro:include filename="parameters.xacro"/>
