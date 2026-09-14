@@ -11,9 +11,8 @@ position-->
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
+        <mesh filename="${mesh_dir}/doomba_wheel.dae"/>
       </geometry>
-      <material name="dark_grey"/>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -45,9 +44,8 @@ position-->
   <visual>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <geometry>
-      <box size="${base_length} ${base_width} ${base_height}"/>
+      <mesh filename="${mesh_dir}/doomba_body.dae"/>
     </geometry>
-    <material name="blue"/>
   </visual>
   <collision>
     <origin xyz="0 0 0" rpy="0 0 0"/>

@@ -3,6 +3,10 @@
 refers to these values.-->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+<!--Shortcut to the mesh folder, so each visual only writes a file name.
+$(find assignment3) is the installed package path, filled in by xacro.-->
+<xacro:property name="mesh_dir" value="file://$(find assignment3)/meshes"/>
+
 <!--Every dimension is written once here-->
 <!--Chassis box-->
 <xacro:property name="base_length" value="0.6"/>

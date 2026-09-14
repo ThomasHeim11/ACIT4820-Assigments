@@ -25,5 +25,8 @@ CLAUDE.md
 .DS_Store
 test.tex
 
+# --- Working notes ---
+ros2_ws/src/*/todo.md
+
 # --- Course material (uncomment to keep the lecturer's PDF out of the repo) ---
 # Assignment 1 ACiT4820.pdf

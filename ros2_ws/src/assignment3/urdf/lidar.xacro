@@ -7,9 +7,8 @@ Gazebo sensor that produces the scan.-->
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <cylinder radius="${lidar_radius}" length="${lidar_length}"/>
+                <mesh filename="${mesh_dir}/doomba_lidar.dae"/>
             </geometry>
-            <material name="dark_grey"/>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
