@@ -52,6 +52,7 @@ which carry their own colours.-->
 <!--Tensor for the primitive shapes. Each takes a mass and the dimensions.-->
 <xacro:macro name="inertial_cylinder" params="mass radius length">
   <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <mass value="${mass}"/>
     <inertia ixx="${mass*(3*radius*radius + length*length)/12}" ixy="0" ixz="0"
              iyy="${mass*(3*radius*radius + length*length)/12}" iyz="0"
@@ -61,6 +62,7 @@ which carry their own colours.-->
 
 <xacro:macro name="inertial_sphere" params="mass radius">
   <inertial>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
     <mass value="${mass}"/>
     <inertia ixx="${2*mass*radius*radius/5}" ixy="0" ixz="0"
              iyy="${2*mass*radius*radius/5}" iyz="0"
