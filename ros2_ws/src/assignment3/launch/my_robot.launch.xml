@@ -5,10 +5,18 @@ robot spawned into it, the bridge between Gazebo and ROS2, and RViz-->
 <launch>
 <arg name="headless" default="false"
     description="Run Gazebo without the GUI client"/>
+<!--RViz is a second 3D window. Turning it off leaves more for Gazebo,
+which helps when recording in the virtual machine.-->
+<arg name="rviz" default="true"
+    description="Start RViz alongside Gazebo"/>
 <!--The three configurations are 120/30, 180/45 and 360/90, which all keep
 the rays about 4 degrees apart.-->
 <arg name="lidar_fov" default="180" description="Field of view in degrees"/>
 <arg name="lidar_rays" default="45" description="Number of rays"/>
+<!--Speed and turn rate are scaled together so the turn radius stays the
+same. Lower both to record, since the lidar visual lags at full speed.-->
+<arg name="speed" default="1.5" description="Forward speed in m/s"/>
+<arg name="max_turn" default="7.2" description="Turn rate limit in rad/s"/>
 <!--Paths resolved from the installed package.-->
 <let name="pkg_share" value="$(find-pkg-share assignment3)"/>
 <let name="xacro_path" value="$(var pkg_share)/urdf/my_robot.urdf.xacro"/>
@@ -18,8 +26,10 @@ the rays about 4 degrees apart.-->
 
 <!--gz_server computes the physics, gz_client draws it. The client can be
 skipped when only RViz is needed.-->
-<!--ogre v1 is forced because the default ogre2 renders a black scene here.-->
-<executable cmd="gz sim -s -r --render-engine ogre $(var world_path)"
+<!--The server is left on its default so the world file can pick the engine
+for the sensors, which it asks to be ogre2. Only the client is forced to
+ogre v1, because ogre2 draws a black scene here.-->
+<executable cmd="gz sim -s -r $(var world_path)"
             name="gz_server" output="screen"/>
 <executable cmd="gz sim -g --render-engine-gui ogre" name="gz_client" output="screen"
             unless="$(var headless)"/>
@@ -50,16 +60,16 @@ Everything that is tuned lives here, not in the node.-->
 <node pkg="assignment3" exec="mazerunner" output="screen">
     <param name="wall_distance" value="0.45"/>
     <param name="lookahead" value="0.9"/>
-    <param name="speed" value="1.5"/>
+    <param name="speed" value="$(var speed)"/>
     <param name="gain" value="1.6"/>
-    <param name="max_turn" value="7.2"/>
+    <param name="max_turn" value="$(var max_turn)"/>
     <param name="front_stop" value="0.6"/>
     <param name="sector" value="8.0"/>
     <param name="use_sim_time" value="true"/>
 </node>
 
 <!--RViz with the saved config: fixed frame base_footprint-->
-<node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)">
+<node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)" if="$(var rviz)">
     <param name="use_sim_time" value="true"/>
 </node>
 </launch> 

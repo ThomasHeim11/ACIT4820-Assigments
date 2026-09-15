@@ -341,51 +341,50 @@ where it was.
 \end{figure}
 
 Fig.~\ref{fig:t2_flow} shows what the node does every time a scan arrives. The
-same path runs about 30 times a second, and there is no memory between one scan
-and the next. Everything the robot does comes from the scan it is holding right
-now.
+same path runs about 30 times a second. Everything the robot does comes from the most recent scan.
 
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
-    node distance = 5mm,
-    box/.style  = {rounded corners, draw, align=center, text width=44mm,
-                   inner sep=3pt, font=\scriptsize},
-    dec/.style  = {diamond, aspect=2.6, draw, align=center, inner sep=1pt,
+    node distance = 4mm,
+    box/.style  = {rounded corners, draw, align=center, text width=29mm,
+                   inner sep=2.5pt, font=\scriptsize},
+    dec/.style  = {diamond, aspect=2.4, draw, align=center, inner sep=0pt,
                    font=\scriptsize},
-    term/.style = {rounded corners=6pt, draw, fill=gray!12, align=center,
+    term/.style = {rounded corners=5pt, draw, fill=gray!12, align=center,
                    inner sep=3pt, font=\scriptsize},
     lbl/.style  = {font=\scriptsize},
-    ar/.style   = {-{Stealth[length=2mm]}}
+    ar/.style   = {-{Stealth[length=1.8mm]}}
 ]
-\node (scan)  [term] {scan arrives};
-\node (run)   [dec, below=of scan] {running?};
-\node (zero)  [box, below=22mm of run.west, anchor=north east, xshift=-4mm,
-               text width=26mm] {publish\\\texttt{Twist(0,0)}};
-\node (read)  [box, below=of run] {read $b$, $a$ and \texttt{front}};
-\node (calc)  [box, below=of read]
-      {work out $\alpha$, \texttt{ahead}\\and \texttt{error}};
-\node (near)  [dec, below=of calc] {\texttt{front} close?};
-\node (full)  [box, below=of near] {turn at full rate};
-\node (out)   [box, below=of full]
-      {limit the turn\\ease off the speed};
-\node (pub)   [term, below=of out] {publish \texttt{Twist}};
+\node (scan) [term] {scan arrives};
+\node (run)  [dec, aspect=2.8, below=of scan] {running?};
+\node (read) [box, below=of run] {read $b$, $a$ and \texttt{front}};
+\node (calc) [box, below=of read]
+      {work out $\alpha$, \texttt{ahead} and \texttt{error}};
+\node (near) [dec, below=of calc] {wall close ahead?};
+\node (full) [box, below=of near] {turn at full rate};
+\node (out)  [box, below=of full] {limit turn, slow down};
+\node (pub)  [term, below=of out] {send \texttt{Twist}};
+\node (zero) [box, text width=17mm, left=8mm of calc]
+      {send zero\\\texttt{Twist}};
 
 \draw [ar] (scan) -- (run);
-\draw [ar] (run) -- node [lbl, right] {yes} (read);
-\draw [ar] (run.west) -| node [lbl, above left] {no} (zero);
+\draw [ar] (run)  -- node [lbl, right] {yes} (read);
+\draw [ar] (run.west) -| node [lbl, above left] {no} (zero.north);
 \draw [ar] (read) -- (calc);
 \draw [ar] (calc) -- (near);
 \draw [ar] (near) -- node [lbl, right] {yes} (full);
 \draw [ar] (full) -- (out);
-\draw [ar] (near.east) -| node [lbl, above right] {no} ++(12mm,0)
-           |- (out.east);
+\draw [ar] (near.east) -- node [lbl, above] {no} ++(10mm,0) |- (out.east);
 \draw [ar] (out) -- (pub);
-\draw [ar] (zero) |- (pub.west);
+\draw [ar] (zero.south) |- (pub.west);
 \end{tikzpicture}
-\caption{Decision logic of \texttt{mazerunner.py}, run once per scan. Both
-         branches end at the same publish, so the robot is given a command
-         every scan whether it is driving or not.}
+\caption{Decision logic of \texttt{mazerunner.py}, run once for every LiDAR
+         scan. $b$ is the distance to the side at $-90^\circ$, $a$ the one at
+         $-45^\circ$ and \texttt{front} the one straight ahead. $\alpha$ is the
+         angle of the wall, \texttt{ahead} the distance we will have after
+         driving forward, and \texttt{error} the gap between that and the
+         distance we want to hold.}
 \label{fig:t2_flow}
 \end{figure}
 
@@ -405,3 +404,4 @@ on its right side. It drives a lap in about 33 seconds.
 \section{Use of AI}
 
 \end{document}
+
