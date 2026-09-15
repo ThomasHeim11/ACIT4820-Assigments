@@ -49,11 +49,11 @@ must match the one used in the bridge config.-->
 Everything that is tuned lives here, not in the node.-->
 <node pkg="assignment3" exec="mazerunner" output="screen">
     <param name="wall_distance" value="0.45"/>
-    <param name="lookahead" value="0.35"/>
-    <param name="speed" value="0.25"/>
+    <param name="lookahead" value="0.9"/>
+    <param name="speed" value="1.5"/>
     <param name="gain" value="1.6"/>
-    <param name="max_turn" value="1.2"/>
-    <param name="front_stop" value="0.55"/>
+    <param name="max_turn" value="7.2"/>
+    <param name="front_stop" value="0.6"/>
     <param name="sector" value="8.0"/>
     <param name="use_sim_time" value="true"/>
 </node>

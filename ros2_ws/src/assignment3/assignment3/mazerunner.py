@@ -77,11 +77,15 @@ class MazeRunner(Node):
             turn = self.p("gain") * (self.p("wall_distance") - ahead)
 
             limit = self.p("max_turn")
-            if front < self.p("front_stop"):
-                twist.angular.z = limit
-            else:
-                twist.angular.z = max(-limit, min(limit, turn))
-                twist.linear.x = self.p("speed")
+            stop = self.p("front_stop")
+            if front < stop:
+                # A corner. Commit to the turn, because the side reading
+                # still looks fine right up until the robot hits the wall.
+                turn = limit
+            twist.angular.z = max(-limit, min(limit, turn))
+
+            # Ease off as the front comes nearer.The robot drives along the curve of the wall. 
+            twist.linear.x = self.p("speed") * min(1.0, front / stop)
 
         # Paused means a zero Twist, not silence. The diff drive plugin keeps
         # the last command it was given.

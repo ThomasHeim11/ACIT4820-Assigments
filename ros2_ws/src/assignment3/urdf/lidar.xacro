@@ -33,7 +33,7 @@ Gazebo sensor that produces the scan.-->
         <sensor name="lidar" type="gpu_lidar">
             <topic>scan</topic>
             <gz_frame_id>lidar_link</gz_frame_id>
-            <update_rate>10</update_rate>
+            <update_rate>30</update_rate>
             <always_on>1</always_on>
             <visualize>true</visualize>
             <ray>
