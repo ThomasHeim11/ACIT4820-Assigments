@@ -11,6 +11,8 @@
 \usepackage{listings}
 \usepackage{subcaption}
 \usepackage[newfloat]{minted}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
 \pagestyle{plain}
 
 \setminted{
@@ -138,9 +140,7 @@ I_{zz}        &= \frac{1}{2}mr^2 \\
 
 Our wheel is turned by its joint, not inside the link. So in the wheel link's own frame the round axis is still $z$, and the symmetry term stays on $I_{zz}$. Had we rotated the geometry inside the link, it would have moved to $I_{yy}$.
 
-We turned on Collision in the RobotModel display and
-lowered the Alpha to 0.3. Figure~\ref{fig:t1_collision} shows the result. The
-body cylinder sits inside the mesh and nothing is floating or offset. 
+ Figure~\ref{fig:t1_collision} shows the result. We turned on Collision in the RobotModel display and lowered the Alpha to 0.3. The body cylinder sits inside the mesh and nothing is floating or offset. 
 
 \begin{figure}[H]
     \centering
@@ -170,6 +170,233 @@ joint and not inside the link, which is what our inertia depends on. Both also m
              \texttt{left\_wheel\_link}. The rotation of $-90$ degrees about
              $x$ is the wheel joint laying the cylinder flat.}
     \label{fig:t1_tf_wheel}
+\end{figure}
+
+\subsection{Task 2}
+Before we wrote any code, we sketched out the controller, as we can see in
+Fig.~\ref{fig:t2_controller}. In our sketch we have two beams facing the wall
+and one that goes straight ahead. The two side beams give us the angle of the
+wall. Based on this, we can work out how far from the wall the robot will be
+after driving forward a short way. We compare that to the distance we want to
+hold. The bigger the gap, the harder the robot turns. We decided to hold 45\,cm from the wall. The nose sweeps a circle of 19\,cm when the robot spins, so this leaves a margin of 26\,cm. We wanted more than twice the sweep, so that we had a good margin for the robot to turn anywhere
+along the wall without hitting it.
+
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    scale = 0.80,
+    >     = {Stealth[length=2mm]},
+    beam/.style = {->, thick, blue!55!black},
+    lbl/.style  = {font=\scriptsize},
+    hint/.style = {font=\scriptsize, gray!50!black}
+]
+% ---- the wall, tilted so the wall angle is visible ----
+\draw [very thick] (0.3,-0.9) -- (9.2,1.0);
+\node [hint] at (8.3,-0.3) {wall};
+
+% ---- the robot ----
+\draw [thick, fill=gray!12] (1.7,2.5) circle (0.55);
+\fill (2.2,2.5) circle (1.7pt);
+\node [lbl, above] at (2.35,2.62) {LiDAR};
+
+% ---- the three beams ----
+\draw [beam] (2.2,2.5) -- (2.2,-0.494);
+\node [lbl, left] at (2.1,0.6) {$b$};
+\draw [beam] (2.2,2.5) -- (4.667,0.033);
+\node [lbl, above right] at (3.5,1.35) {$a$};
+\draw [beam] (2.2,2.5) -- (8.3,2.5);
+\node [lbl, above] at (6.6,2.52) {\texttt{front}};
+
+% ---- lookahead, measured above the robot so it stays clear ----
+\draw [dotted, gray] (2.2,2.5) -- (2.2,3.3);
+\draw [dotted, gray] (3.9,2.5) -- (3.9,3.3);
+\draw [<->, red!60!black] (2.2,3.2) -- (3.9,3.2);
+\node [lbl, above] at (3.05,3.2) {\texttt{lookahead}};
+
+% ---- the distance at the end of the lookahead ----
+\draw [dashed, red!60!black] (3.9,2.5) -- (3.9,-0.131);
+\node [lbl, right] at (3.98,1.75) {\texttt{ahead}};
+
+% ---- the distance we hold, drawn only on the open right hand side ----
+\draw [dashed, gray] (5.0,0.894) -- (9.2,1.79);
+\node [hint, above] at (6.9,1.43) {\texttt{wall\_distance}};
+
+% ---- the wall angle ----
+\draw [dashed, gray] (6.8,0.488) -- (8.6,0.488);
+\draw [gray] (7.9,0.488) arc (0:12:1.1);
+\node [lbl] at (8.05,0.72) {$\alpha$};
+
+% ---- what the robot does with it ----
+\node [draw, rounded corners, align=left, font=\scriptsize,
+       inner sep=4pt] at (4.6,-2.0)
+      {$\texttt{ahead} = b\cos\alpha + \texttt{lookahead}\cdot\sin\alpha$ \\[2pt]
+       $\texttt{error} = \texttt{wall\_distance} - \texttt{ahead}$ \\[2pt]
+       $\texttt{turn}  = \texttt{gain}\cdot\texttt{error}$};
+\end{tikzpicture}
+\caption{Controller diagram. Beams $b$ at $-90^\circ$ and $a$ at $-45^\circ$
+         give the wall angle $\alpha$. \texttt{ahead} is the distance we will
+         have after driving forward by \texttt{lookahead}. The error is the gap
+         between \texttt{ahead} and \texttt{wall\_distance}, and the turn rate
+         follows it.}
+\label{fig:t2_controller}
+\end{figure}
+
+
+We ask the scan for an angle, and work out which ray that is from the message
+itself, as we can see in Fig.~\ref{lst:t2_scan}. If the scan is narrow there is
+no ray at $-90^\circ$, so we take the closest one it has. We also throw away
+the rays that come back as \texttt{inf}. For each angle we take the shortest
+reading in a small sector, so one bad ray cannot steer the robot.
+
+%TC:ignore
+\begin{figure}[H]
+\begin{minted}{python}
+@staticmethod
+def index(scan, angle):
+    i = int(round((angle - scan.angle_min) / scan.angle_increment))
+    return max(0, min(len(scan.ranges) - 1, i))
+
+def look(self, scan, angle):
+    half = math.radians(self.p("sector"))
+    lo = self.index(scan, angle - half)
+    hi = self.index(scan, angle + half)
+    good = [r for r in scan.ranges[lo:hi + 1]
+            if scan.range_min < r < scan.range_max]
+    return min(good) if good else scan.range_max
+\end{minted}
+\caption{Reading the scan by angle instead of by index, from
+         mazerunner.py.}
+\label{lst:t2_scan}
+\end{figure}
+%TC:endignore
+
+We put everything we tuned in the launch file, as we can see in
+Fig.~\ref{lst:t2_params}. That way we could change the speed or the gain and
+launch again, without touching the node or building it again.
+
+%TC:ignore
+\begin{figure}[H]
+\begin{minted}{xml}
+<node pkg="assignment3" exec="mazerunner" output="screen">
+    <param name="wall_distance" value="0.45"/>
+    <param name="lookahead" value="0.9"/>
+    <param name="speed" value="1.5"/>
+    <param name="gain" value="1.6"/>
+    <param name="max_turn" value="7.2"/>
+    <param name="front_stop" value="0.6"/>
+    <param name="sector" value="8.0"/>
+</node>
+\end{minted}
+\caption{The parameters the launch file sets, from my\_robot.launch.xml.}
+\label{lst:t2_params}
+\end{figure}
+%TC:endignore
+
+We made the node have two states, either paused or running, and one service
+that moves between them, as we show in Fig.~\ref{fig:t2_state}. The service
+gives feedback about which state it switched to, so we could look in the
+terminal to see whether the robot should be moving.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    state/.style = {rounded corners, draw, align=center,
+                    minimum width=32mm, minimum height=16mm},
+    lbl/.style   = {font=\footnotesize},
+    arrow/.style = {-{Stealth[length=2mm]}}
+]
+\node (init) [circle, fill, inner sep=1.7pt] {};
+\node (paused)  [state, right=7mm of init]
+      {\textbf{PAUSED}\\[2pt]
+       \scriptsize publishes \texttt{Twist(0,0)}\\[-2pt]
+       \scriptsize on every scan};
+\node (running) [state, right=26mm of paused]
+      {\textbf{RUNNING}\\[2pt]
+       \scriptsize publishes the computed\\[-2pt]
+       \scriptsize \texttt{Twist} on every scan};
+
+\draw [arrow] (init) -- (paused);
+\draw [arrow] (paused.north) to [bend left=30]
+      node [lbl, above] {\texttt{/toggle\_pause}} (running.north);
+\draw [arrow] (running.south) to [bend left=30]
+      node [lbl, below] {\texttt{/toggle\_pause}} (paused.south);
+\end{tikzpicture}
+\caption{State machine of \texttt{mazerunner.py}. The filled circle marks the
+         state the node starts in. Both states publish on every scan.}
+\label{fig:t2_state}
+\end{figure}
+
+We called the service twice to check that it goes both ways, as we can see in
+Fig.~\ref{fig:t2_toggle}. The first call answered \texttt{running} and the
+robot started driving. The second one answered \texttt{paused} and it stopped
+where it was.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/00_task2.png}
+    \caption{Calling \texttt{/toggle\_pause} from the terminal. The reply tells
+             us which state the node went to.}
+    \label{fig:t2_toggle}
+\end{figure}
+
+Fig.~\ref{fig:t2_flow} shows what the node does every time a scan arrives. The
+same path runs about 30 times a second, and there is no memory between one scan
+and the next. Everything the robot does comes from the scan it is holding right
+now.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance = 5mm,
+    box/.style  = {rounded corners, draw, align=center, text width=44mm,
+                   inner sep=3pt, font=\scriptsize},
+    dec/.style  = {diamond, aspect=2.6, draw, align=center, inner sep=1pt,
+                   font=\scriptsize},
+    term/.style = {rounded corners=6pt, draw, fill=gray!12, align=center,
+                   inner sep=3pt, font=\scriptsize},
+    lbl/.style  = {font=\scriptsize},
+    ar/.style   = {-{Stealth[length=2mm]}}
+]
+\node (scan)  [term] {scan arrives};
+\node (run)   [dec, below=of scan] {running?};
+\node (zero)  [box, below=22mm of run.west, anchor=north east, xshift=-4mm,
+               text width=26mm] {publish\\\texttt{Twist(0,0)}};
+\node (read)  [box, below=of run] {read $b$, $a$ and \texttt{front}};
+\node (calc)  [box, below=of read]
+      {work out $\alpha$, \texttt{ahead}\\and \texttt{error}};
+\node (near)  [dec, below=of calc] {\texttt{front} close?};
+\node (full)  [box, below=of near] {turn at full rate};
+\node (out)   [box, below=of full]
+      {limit the turn\\ease off the speed};
+\node (pub)   [term, below=of out] {publish \texttt{Twist}};
+
+\draw [ar] (scan) -- (run);
+\draw [ar] (run) -- node [lbl, right] {yes} (read);
+\draw [ar] (run.west) -| node [lbl, above left] {no} (zero);
+\draw [ar] (read) -- (calc);
+\draw [ar] (calc) -- (near);
+\draw [ar] (near) -- node [lbl, right] {yes} (full);
+\draw [ar] (full) -- (out);
+\draw [ar] (near.east) -| node [lbl, above right] {no} ++(12mm,0)
+           |- (out.east);
+\draw [ar] (out) -- (pub);
+\draw [ar] (zero) |- (pub.west);
+\end{tikzpicture}
+\caption{Decision logic of \texttt{mazerunner.py}, run once per scan. Both
+         branches end at the same publish, so the robot is given a command
+         every scan whether it is driving or not.}
+\label{fig:t2_flow}
+\end{figure}
+
+Fig.~\ref{fig:t2_maze} shows the robot part way round the maze, with the wall
+on its right side. It drives a lap in about 33 seconds.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/01_task2.png}
+    \caption{The robot following the right hand wall in \texttt{maze.world}.}
+    \label{fig:t2_maze}
 \end{figure}
 
 \section{Reflection}
