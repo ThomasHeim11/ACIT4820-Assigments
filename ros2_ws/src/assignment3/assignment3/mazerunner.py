@@ -44,6 +44,11 @@ class MazeRunner(Node):
         return response
 
     @staticmethod
+    def available(scan,angle):
+        """The closest angle this scan can see."""
+        return max(scan.angle_min, min(scan.angle_max, angle))
+
+    @staticmethod
     def index(scan, angle):
         """ Angle to index. A 120 degree scan has no ray at -90"""
         i = int(round((angle - scan.angle_min) / scan.angle_increment))
@@ -61,9 +66,12 @@ class MazeRunner(Node):
     def on_scan(self, scan):
         twist = Twist()
         if self.running:
-            theta = math.radians(45.0)
-            b = self.look(scan, -math.pi / 2)          # out to the right
-            a = self.look(scan, -math.pi / 2 + theta)  # forward right
+            side = self.available(scan, -math.pi / 2)
+            # Half way between the side ray and straight ahead, so both rays
+            # stay on the same wall. This is 45 degrees on a 180 degree scan.
+            theta = -side / 2
+            b = self.look(scan, side)                  # out to the right
+            a = self.look(scan, side + theta)          # forward right
             front = self.look(scan, 0.0)
 
             # The two ray lengths form a triangle with the wall.
@@ -72,8 +80,12 @@ class MazeRunner(Node):
             hyp = math.hypot(num, den)
             sin_a, cos_a = num / hyp, den / hyp
 
+            # Turns the wall angle back if the side ray is not square on.
+            delta = side + math.pi / 2
+            sin_t = sin_a * math.cos(delta) - cos_a * math.sin(delta)
+
             # Where the wall will be after driving forward a bit.
-            ahead = b * cos_a + self.p("lookahead") * sin_a
+            ahead = b * cos_a + self.p("lookahead") * sin_t
             turn = self.p("gain") * (self.p("wall_distance") - ahead)
 
             limit = self.p("max_turn")

@@ -398,8 +398,82 @@ on its right side. It drives a lap in about 33 seconds.
     \label{fig:t2_maze}
 \end{figure}
 
+\subsection{Task 3}
+
+We kept the rays 4 degrees apart in all three runs, so the field of view was
+the only thing that changed. We wrote down what we thought would happen before
+we launched, and filled in what actually happened afterwards.
+Table~\ref{tab:t3_fov} shows both.
+
+\begin{table}[H]
+\caption{The three scans we ran. The prediction column was written before the
+         run, the observation column after it.}
+\label{tab:t3_fov}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{13mm} p{25mm} p{25mm} p{17mm}@{}}
+\toprule
+\textbf{Scan} & \textbf{Prediction} & \textbf{Observation} &
+\textbf{What changed} \\
+\midrule
+
+$180^\circ$, 45 rays &
+We don't think this will break. We had tuned the robot on this scan, so this
+run is our starting point. &
+It ran smoothly and did not hit any walls. &
+Nothing. \\
+\addlinespace
+
+$120^\circ$, 30 rays &
+The scan cannot see straight out to the side. The robot will read the wall at
+an angle, and we think the robot will follow it worse and potentially hit the
+corners. &
+It almost hit the wall, and then ended up turning around and going in
+the opposite direction. The robot did this in a loop and could not finish the
+maze since it went back and forth. &
+We made the gap between ray $b$ and ray $a$ follow the scan, instead of
+holding it at a fixed 45 degrees. \\
+\addlinespace
+
+$360^\circ$, 90 rays &
+Nothing should change. We ask the scan for three fixed angles, so the rays
+behind the robot are never read. There is no wall behind us that the node can
+be confused by. &
+It ran smoothly as before. &
+Nothing. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Reflection}
 
+For Task 2 we had a fun time debugging the lidar scanner, as the scan was
+lagging behind the robot when it was driving, as we can see in
+Fig.~\ref{fig:t2_bug}. We used over two hours debugging this and tried a lot of
+different things, but none of them worked. Finally we got a tip from Claude
+that we could make the Gazebo window smaller. We tried it and it just worked,
+and the scan was now following the robot, as we can see in
+Fig.~\ref{fig:t2_fix}. It turned out that the GPU cost scales with the pixel
+count, so fewer pixels made the GPU work less, and that was enough for the scan
+to keep up with the robot.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/02_task2bugGazebo.png}
+    \caption{The scan lagging behind the robot. The blue fan is drawn where the
+             robot was a moment earlier, not where it is now.}
+    \label{fig:t2_bug}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{fig/Task2/03_task3fix.png}
+    \caption{The same run in a smaller Gazebo window.}
+    \label{fig:t2_fix}
+\end{figure}
+
+For the recording of the video, we also had some problems. We first tried to use a program called Peek to record, but this gave us a laggy recording as it used a lot of GPU space. We then figured out that we could use the Gazebo built-in recorder, and this worked a lot better, and it was less laggy. 
 
 \section{Use of AI}
 
