@@ -44,7 +44,7 @@ class MazeRunner(Node):
         return response
 
     @staticmethod
-    def available(scan,angle):
+    def available(scan, angle):
         """The closest angle this scan can see."""
         return max(scan.angle_min, min(scan.angle_max, angle))
 
@@ -96,7 +96,8 @@ class MazeRunner(Node):
                 turn = limit
             twist.angular.z = max(-limit, min(limit, turn))
 
-            # Ease off as the front comes nearer.The robot drives along the curve of the wall. 
+            # Ease off as the front comes nearer. The robot drives along the
+            # curve of the wall.
             twist.linear.x = self.p("speed") * min(1.0, front / stop)
 
         # Paused means a zero Twist, not silence. The diff drive plugin keeps
