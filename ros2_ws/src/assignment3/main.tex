@@ -364,7 +364,7 @@ is under 60\,cm and it ends when it goes over 90\,cm.
       {start the turn if the front is close, end it when the front is clear};
 \node (near) [dec, below=of hyst] {turning?};
 \node (full) [box, below=of near] {turn at full rate};
-\node (out)  [box, below=of full] {limit turn, slow down};
+\node (out)  [box, below=of full] {limit turn, slow if front is near};
 \node (pub)  [term, below=of out] {send \texttt{Twist}};
 \node (zero) [box, text width=17mm, left=8mm of calc]
       {send zero\\\texttt{Twist}};
