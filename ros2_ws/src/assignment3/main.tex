@@ -78,21 +78,26 @@
 
 \maketitle
 
-\section{Method}
-
-Fig.~\ref{fig:concept} shows the whole problem in one drawing. The robot follows the wall on its right, and sees as far as the scan
-reaches. It reads three distances, works out how far off 45\,cm it will be
-after driving on a bit, and turns by that much. Then the next scan arrives and
+\section{Design Choices and Method}
+We started with a basic wall follower and built on it
+from there. It is quite simple and only asks how far the wall is right now and never where the robot is in the maze.
+Fig.~\ref{fig:concept} shows the whole problem in one drawing. The robot follows the wall on its right, and sees as far as the scan reaches. It reads three distances, works out how far off 45\,cm it will be after driving on a bit, and turns by that much. Then the next scan arrives and
 it does the same again, about 30 times a second.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{fig/Task1/03_task.jpg}
-    \caption{Our drawing of the whole problem and our solution. The robot
-             follows the wall on its right through the maze, and repeats the
-             same read, work out and turn on every scan.}
+    \caption{The lines out of the robot are what the scan sees, and the loop at the top is
+             what it does with them on every scan: reads the wall, works out
+             the error, and turns.}
     \label{fig:concept}
 \end{figure}
+
+The first thing we added was a second ray on the wall. Two rays help us get the angle of the wall, not only the distance. They tell the robot if it is
+driving along the wall or towards it, and that helps the robot turn before it hits the wall. We ask the scan for an angle, and the node works out which ray that is from the message itself. So it does not matter how wide the scan is. For each of the three directions we read five rays and keep the shortest one. This helps so that one bad
+reading does not send the robot into the wall. We made the launch file more plug and play by putting everything we tune
+there as arguments. This made it easy to test our
+robot without having to manually go into the code and change each magic number.
 
 \section{Results}
 
@@ -219,64 +224,15 @@ along the wall without hitting it.
 
 
 \begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    scale = 0.80,
-    >     = {Stealth[length=2mm]},
-    beam/.style = {->, thick, blue!55!black},
-    lbl/.style  = {font=\scriptsize},
-    hint/.style = {font=\scriptsize, gray!50!black}
-]
-% ---- the wall, tilted so the wall angle is visible ----
-\draw [very thick] (0.3,-0.9) -- (9.2,1.0);
-\node [hint] at (8.3,-0.3) {wall};
-
-% ---- the robot ----
-\draw [thick, fill=gray!12] (1.7,2.5) circle (0.55);
-\fill (2.2,2.5) circle (1.7pt);
-\node [lbl, above] at (2.35,2.62) {LiDAR};
-
-% ---- the three beams ----
-\draw [beam] (2.2,2.5) -- (2.2,-0.494);
-\node [lbl, left] at (2.1,0.6) {$b$};
-\draw [beam] (2.2,2.5) -- (4.667,0.033);
-\node [lbl, above right] at (3.5,1.35) {$a$};
-\draw [beam] (2.2,2.5) -- (8.3,2.5);
-\node [lbl, above] at (6.6,2.52) {\texttt{front}};
-
-% ---- lookahead, measured above the robot so it stays clear ----
-\draw [dotted, gray] (2.2,2.5) -- (2.2,3.3);
-\draw [dotted, gray] (3.9,2.5) -- (3.9,3.3);
-\draw [<->, red!60!black] (2.2,3.2) -- (3.9,3.2);
-\node [lbl, above] at (3.05,3.2) {\texttt{lookahead}};
-
-% ---- the distance at the end of the lookahead ----
-\draw [dashed, red!60!black] (3.9,2.5) -- (3.9,-0.131);
-\node [lbl, right] at (3.98,1.75) {\texttt{ahead}};
-
-% ---- the distance we hold, drawn only on the open right hand side ----
-\draw [dashed, gray] (5.0,0.894) -- (9.2,1.79);
-\node [hint, above] at (6.9,1.43) {\texttt{wall\_distance}};
-
-% ---- the wall angle ----
-\draw [dashed, gray] (6.8,0.488) -- (8.6,0.488);
-\draw [gray] (7.9,0.488) arc (0:12:1.1);
-\node [lbl] at (8.05,0.72) {$\alpha$};
-
-% ---- what the robot does with it ----
-\node [draw, rounded corners, align=left, font=\scriptsize,
-       inner sep=4pt] at (4.6,-2.0)
-      {$\texttt{ahead} = b\cos\alpha + \texttt{lookahead}\cdot\sin\alpha$ \\[2pt]
-       $\texttt{error} = \texttt{wall\_distance} - \texttt{ahead}$ \\[2pt]
-       $\texttt{turn}  = \texttt{gain}\cdot\texttt{error}$};
-\end{tikzpicture}
-\caption{Controller diagram. On a $180^\circ$ scan, beams $b$ at $-90^\circ$
-         and $a$ at $-45^\circ$
-         give the wall angle $\alpha$. \texttt{ahead} is the distance we will
-         have after driving forward by \texttt{lookahead}. The error is the gap
-         between \texttt{ahead} and \texttt{wall\_distance}, and the turn rate
-         follows it.}
-\label{fig:t2_controller}
+    \centering
+    \includegraphics[width=0.85\columnwidth]{fig/Task1/04_task1.jpeg}
+    \caption{Controller diagram. On a $180^\circ$ scan, beams $b$ at
+             $-90^\circ$ and $a$ at $-45^\circ$ give the wall angle
+             $\alpha$. \texttt{ahead} is the distance we will have after
+             driving forward by \texttt{lookahead}. The error is the gap
+             between \texttt{ahead} and \texttt{wall\_distance}, and the
+             turn rate follows it.}
+    \label{fig:t2_controller}
 \end{figure}
 
 
@@ -656,15 +612,20 @@ out what the error was before we could figure out how to fix it. The
 scan had no rays straight out to the side, so the second ray
 read the wall in front instead of the wall to the right.
 We fixed this as we showed in the results section by making the gaps
-between the two rays follow the scan.
-
-For Task 4 we did not have any big issues.
-
-For the recording of the
+between the two rays follow the scan. For Task 4 we did not have any big issues. For the recording of the
 video, we also had some problems. We first tried to use a program
 called Peek to record, but this gave us a laggy recording as it used
 a lot of GPU space. We then figured out that we could use the Gazebo
 built-in recorder, and this worked a lot better, and it was less laggy.
+
+We also looked into different ways of solving this assignment
+based on the micro lectures, such as potential fields.
+One downside of our implementation is that
+it will potentially orbit forever if it meets an island.
+The potential fields approach does not work well if it meets
+a local minimum. We decided to keep our implementation
+as it was already working for the maze, and it keeps
+our solution relatively simple.
 
 \section{Use of AI}
 We used AI for debugging code and trying to understand why our visualisation of the lidar sensor rays was lagging behind the robot.  
