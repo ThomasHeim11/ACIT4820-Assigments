@@ -196,19 +196,21 @@ joint and not inside the link, which is what our inertia depends on.
          joint origins table in the assignment. All values in metres.}
 \label{tab:t1_frames}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}l l l@{}}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}l r r r r r r@{}}
 \toprule
-\textbf{Child frame} & \textbf{Table says} & \textbf{We read} \\
+& \multicolumn{3}{c}{\textbf{Table says}}
+& \multicolumn{3}{c}{\textbf{We read}} \\
+\cmidrule(lr){2-4} \cmidrule(l){5-7}
+\textbf{Child frame} & $x$ & $y$ & $z$ & $x$ & $y$ & $z$ \\
 \midrule
 \texttt{lidar\_link}
-  & 0.080\ \ 0.000\ \ 0.035
-  & 0.080\ \ 0.000\ \ 0.035 \\
-\addlinespace
+  & $0.080$  & $0.000$ & $0.035$
+  & $0.080$  & $0.000$ & $0.035$  \\
 \texttt{left\_wheel\_link}
-  & $-0.030$\ \ 0.130\ \ $-0.020$
-  & $-0.030$\ \ 0.130\ \ $-0.020$ \\
+  & $-0.030$ & $0.130$ & $-0.020$
+  & $-0.030$ & $0.130$ & $-0.020$ \\
 \bottomrule
 \end{tabular}
 \end{table}
