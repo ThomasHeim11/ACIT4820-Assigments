@@ -381,13 +381,9 @@ is under 60\,cm and it ends when it goes over 90\,cm.
 \draw [ar] (out) -- (pub);
 \draw [ar] (zero.south) |- (pub.west);
 \end{tikzpicture}
-\caption{Decision logic of \texttt{mazerunner.py}, run once for every LiDAR
-         scan. On a $180^\circ$ scan, $b$ is the distance to the side at
-         $-90^\circ$, $a$ the one at
-         $-45^\circ$ and \texttt{front} the one straight ahead. $\alpha$ is the
-         angle of the wall, \texttt{ahead} the distance we will have after
-         driving forward, and \texttt{error} the gap between that and the
-         distance we want to hold.}
+\caption{What \texttt{mazerunner.py} does with every scan. Paused, it sends a zero \texttt{Twist} and nothing else. Running, it
+         works out a turn from the two side rays, and the corner rule takes
+         over when the front is blocked.}
 \label{fig:t2_flow}
 \end{figure}
 
@@ -502,7 +498,7 @@ theta = -side / 2
 b = self.look(scan, side)
 a = self.look(scan, side + theta)
 \end{minted}
-\caption{The fix after the $120^\circ$ run. Ray $a$ lands at $-45^\circ$ on a
+\caption{The fix after the $120^\circ$ run. Ray $a$ have $-45^\circ$ on a
          $180^\circ$ scan and $-30^\circ$ on a $120^\circ$ scan.}
 \label{lst:t3_gap}
 \end{figure}
@@ -614,7 +610,7 @@ out what the error was before we could figure out how to fix it. The
 scan had no rays straight out to the side, so the second ray
 read the wall in front instead of the wall to the right.
 We fixed this as we showed in the results section by making the gaps
-between the two rays follow the scan. For Task 4 we did not have any big issues. For the recording of the
+between the two rays follow the scan. For the recording of the
 video, we also had some problems. We first tried to use a program
 called Peek to record, but this gave us a laggy recording as it used
 a lot of GPU space. We then figured out that we could use the Gazebo
@@ -627,7 +623,7 @@ it will potentially orbit forever if it meets an island.
 The potential fields approach does not work well if it meets
 a local minimum. We decided to keep our implementation
 as it was already working for the maze, and it keeps
-our solution relatively simple.
+our solution relatively simple but working. 
 
 \section{Use of AI}
 We used AI for debugging code and trying to understand why our visualisation of the lidar sensor rays was lagging behind the robot.  
