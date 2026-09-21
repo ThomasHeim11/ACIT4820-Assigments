@@ -25,9 +25,11 @@ class MazeRunner(Node):
         self.declare_parameter("gain", 1.6)
         self.declare_parameter("max_turn", 1.2)
         self.declare_parameter("front_stop", 0.55)
+        self.declare_parameter("front_clear", 0.85)
         self.declare_parameter("sector", 8.0)
 
         self.running = False
+        self.turning = False
         self.cmd = self.create_publisher(Twist, "cmd_vel", 10)
         self.create_subscription(LaserScan, "scan", self.on_scan, 10)
         self.create_service(Trigger, "toggle_pause", self.on_toggle)
@@ -90,9 +92,15 @@ class MazeRunner(Node):
 
             limit = self.p("max_turn")
             stop = self.p("front_stop")
+            # Two thresholds, so the robot commits to a corner instead of
+            # flipping in and out of the turn at one line.
             if front < stop:
-                # A corner. Commit to the turn, because the side reading
-                # still looks fine right up until the robot hits the wall.
+                self.turning = True
+            elif front > self.p("front_clear"):
+                self.turning = False
+            if self.turning:
+                # The side reading still looks fine right up until the robot
+                # hits the wall, so the front ray has to take over.
                 turn = limit
             twist.angular.z = max(-limit, min(limit, turn))
 

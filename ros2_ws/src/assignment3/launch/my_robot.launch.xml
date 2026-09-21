@@ -64,6 +64,7 @@ Everything that is tuned lives here, not in the node.-->
     <param name="gain" value="1.6"/>
     <param name="max_turn" value="$(var max_turn)"/>
     <param name="front_stop" value="0.6"/>
+    <param name="front_clear" value="0.9"/>
     <param name="sector" value="8.0"/>
     <param name="use_sim_time" value="true"/>
 </node>

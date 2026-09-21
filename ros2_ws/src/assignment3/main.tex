@@ -322,6 +322,7 @@ launch again, without touching the node or building it again.
     <param name="gain" value="1.6"/>
     <param name="max_turn" value="7.2"/>
     <param name="front_stop" value="0.6"/>
+    <param name="front_clear" value="0.9"/>
     <param name="sector" value="8.0"/>
 </node>
 \end{minted}
@@ -339,16 +340,16 @@ terminal to see whether the robot should be moving.
 \centering
 \begin{tikzpicture}[
     state/.style = {rounded corners, draw, align=center,
-                    minimum width=32mm, minimum height=16mm},
+                    minimum width=27mm, minimum height=16mm},
     lbl/.style   = {font=\footnotesize},
     arrow/.style = {-{Stealth[length=2mm]}}
 ]
 \node (init) [circle, fill, inner sep=1.7pt] {};
-\node (paused)  [state, right=7mm of init]
+\node (paused)  [state, right=5mm of init]
       {\textbf{PAUSED}\\[2pt]
        \scriptsize publishes \texttt{Twist(0,0)}\\[-2pt]
        \scriptsize on every scan};
-\node (running) [state, right=26mm of paused]
+\node (running) [state, right=16mm of paused]
       {\textbf{RUNNING}\\[2pt]
        \scriptsize publishes the computed\\[-2pt]
        \scriptsize \texttt{Twist} on every scan};
@@ -379,6 +380,9 @@ where it was.
 
 Fig.~\ref{fig:t2_flow} shows what the node does every time a scan arrives. The
 same path runs about 30 times a second. Everything the robot does comes from the most recent scan.
+The turn has two thresholds instead of one as we originally had. We changed
+this after we looked at micro lecture T5. So it starts when the front reading
+is under 60\,cm and it ends when it goes over 90\,cm.
 
 \begin{figure}[H]
 \centering
@@ -398,7 +402,9 @@ same path runs about 30 times a second. Everything the robot does comes from the
 \node (read) [box, below=of run] {read $b$, $a$ and \texttt{front}};
 \node (calc) [box, below=of read]
       {work out $\alpha$, \texttt{ahead} and \texttt{error}};
-\node (near) [dec, below=of calc] {wall close ahead?};
+\node (hyst) [box, below=of calc]
+      {start the turn if the front is close, end it when the front is clear};
+\node (near) [dec, below=of hyst] {turning?};
 \node (full) [box, below=of near] {turn at full rate};
 \node (out)  [box, below=of full] {limit turn, slow down};
 \node (pub)  [term, below=of out] {send \texttt{Twist}};
@@ -409,7 +415,8 @@ same path runs about 30 times a second. Everything the robot does comes from the
 \draw [ar] (run)  -- node [lbl, right] {yes} (read);
 \draw [ar] (run.west) -| node [lbl, above left] {no} (zero.north);
 \draw [ar] (read) -- (calc);
-\draw [ar] (calc) -- (near);
+\draw [ar] (calc) -- (hyst);
+\draw [ar] (hyst) -- (near);
 \draw [ar] (near) -- node [lbl, right] {yes} (full);
 \draw [ar] (full) -- (out);
 \draw [ar] (near.east) -- node [lbl, above] {no} ++(10mm,0) |- (out.east);
@@ -579,7 +586,7 @@ Table~\ref{tab:t4_drift} shows both runs.
 \end{table}
 
 The robot was 4.16\,m out of place in the first run and 4.73\,m out in the
-second, and its heading was out by 22 and 32 degrees. The plugin builds the
+second, and its heading was off by 22 and 32 degrees. The plugin builds the
 odometry from the wheel radius $r$, the separation $L$ and the wheel speeds:
 \begin{align*}
 v = \frac{r(\omega_R + \omega_L)}{2}, \qquad
@@ -615,11 +622,13 @@ every corner, so the errors add up instead of cancelling out.
 
 \section{Reflection}
 
-For Task 2 we had a fun time debugging the lidar scanner, as the scan was
+For Task 2, we had a fun time debugging the lidar scanner, as the scan was
 lagging behind the robot when it was driving, as we can see in
 Fig.~\ref{fig:t2_bug}. We used over two hours debugging this and tried a lot of
-different things, but none of them worked. Finally we got a tip from Claude
-that we could make the Gazebo window smaller. We tried it and it just worked,
+different things, but nothing fixed it properly. First we tried to drop the
+scan from 30 to 10\,Hz. That helped the scan keep up, but the robot crashed in
+the corners as it had fewer scans to turn on. Finally, we got a tip from Claude
+that we could make the Gazebo window smaller. We tried it, and it just worked,
 and the scan was now following the robot, as we can see in
 Fig.~\ref{fig:t2_fix}. It turned out that the GPU cost scales with the pixel
 count, so fewer pixels made the GPU work less, and that was enough for the scan
@@ -640,655 +649,24 @@ to keep up with the robot.
     \label{fig:t2_fix}
 \end{figure}
 
-For the recording of the video, we also had some problems. We first tried to use a program called Peek to record, but this gave us a laggy recording as it used a lot of GPU space. We then figured out that we could use the Gazebo built-in recorder, and this worked a lot better, and it was less laggy. 
+For Task 3, we had some problems with getting the robot to work with the
+120 degree scan, as the robot just turned around when it hit the wall and
+could never finish the maze. We spent a lot of time trying to figure
+out what the error was before we could figure out how to fix it. The
+scan had no rays straight out to the side, so the second ray
+read the wall in front instead of the wall to the right.
+We fixed this as we showed in the results section by making the gaps
+between the two rays follow the scan.
+
+For Task 4 we did not have any big issues.
+
+For the recording of the
+video, we also had some problems. We first tried to use a program
+called Peek to record, but this gave us a laggy recording as it used
+a lot of GPU space. We then figured out that we could use the Gazebo
+built-in recorder, and this worked a lot better, and it was less laggy.
 
 \section{Use of AI}
-\documentclass[conference]{IEEEtran}
-
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage{url}
-\usepackage[hidelinks]{hyperref}
-\usepackage{booktabs}
-\usepackage{float}
-\usepackage{listings}
-\usepackage{subcaption}
-\usepackage[newfloat]{minted}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
-\pagestyle{plain}
-
-\setminted{
-    fontsize=\scriptsize,
-    breaklines=true,
-    bgcolor=gray!8,
-    frame=none,
-    xleftmargin=6pt
-}
-
-\lstdefinestyle{code}{
-    backgroundcolor=\color{gray!8},
-    basicstyle=\ttfamily\scriptsize,
-    keywordstyle=\color{green!45!black}\bfseries,
-    commentstyle=\color{gray},
-    stringstyle=\color{red!60!black},
-    breaklines=true,
-    breakatwhitespace=false,
-    postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
-    frame=none,
-    numbers=none,
-    showstringspaces=false,
-    captionpos=b,
-    columns=fullflexible,
-    keepspaces=true,
-    xleftmargin=8pt,
-    framexleftmargin=8pt,
-    aboveskip=6pt,
-    belowskip=6pt
-}
-\lstset{style=code}
-
-% Plain style for the file tree
-\lstdefinestyle{plain}{
-    backgroundcolor=\color{gray!8},
-    basicstyle=\ttfamily\scriptsize,
-    breaklines=true,
-    frame=none,
-    numbers=none,
-    showstringspaces=false,
-    xleftmargin=8pt,
-    framexleftmargin=8pt,
-    aboveskip=6pt,
-    belowskip=6pt
-}
-
-\raggedbottom
-
-% Each listing below is wrapped in word counter skip markers, so the code is
-% not counted. Without them texcount reads the xacro snippets as maths.
-
-\begin{document}
-
-\title{ACIT4820: Assignment 3 \\[4pt] \normalsize \textit{Total words: }}
-
-\author{
-    \IEEEauthorblockN{Felix Boehm}
-    \IEEEauthorblockA{OsloMet \\ feboe8099@oslomet.no}
-     \and
-    \IEEEauthorblockN{Thomas Heim}
-    \IEEEauthorblockA{OsloMet \\ thhei7342@oslomet.no}
-}
-
-\maketitle
-
-\section{Method}
-
-Fig.~\ref{fig:concept} shows the whole problem in one drawing. The robot follows the wall on its right, and sees as far as the scan
-reaches. It reads three distances, works out how far off 45\,cm it will be
-after driving on a bit, and turns by that much. Then the next scan arrives and
-it does the same again, about 30 times a second.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task1/03_task.jpg}
-    \caption{Our drawing of the whole problem and our solution. The robot
-             follows the wall on its right through the maze, and repeats the
-             same read, work out and turn on every scan.}
-    \label{fig:concept}
-\end{figure}
-
-\section{Results}
-
-\subsection{Task 1}
-We calculated the inertia for each link. We took the shape and the size
-from the collision tag. Our wheel also had the same
-numbers as the example in the assignment text. That told us the masses and the
-dimensions were correct. 
-
-\smallskip
-\textbf{\texttt{base\_link}}, cylinder, \mbox{$r=0.16$}, \mbox{$h=0.06$},
-\mbox{$m=5.0$\,kg}:
-\begin{align*}
-I_{xx}=I_{yy} &= \frac{1}{12}m(3r^2+h^2) \\
-              &= \frac{1}{12}(5.0)(0.0804) \\
-              &= 3.35\times10^{-2}~\mathrm{kg\,m^2} \\[4pt]
-I_{zz}        &= \frac{1}{2}mr^2 \\
-              &= \frac{1}{2}(5.0)(0.0256) \\
-              &= 6.40\times10^{-2}~\mathrm{kg\,m^2}
-\end{align*}
-
-\smallskip
-\textbf{\texttt{left\_wheel\_link}} and \textbf{\texttt{right\_wheel\_link}},
-cylinder, \mbox{$r=0.03$}, \mbox{$w=0.025$}, \mbox{$m=0.2$\,kg} each:
-\begin{align*}
-I_{xx}=I_{yy} &= \frac{1}{12}m(3r^2+w^2) \\
-              &= \frac{1}{12}(0.2)(0.003325) \\
-              &= 5.54\times10^{-5}~\mathrm{kg\,m^2} \\[4pt]
-I_{zz}        &= \frac{1}{2}mr^2 \\
-              &= \frac{1}{2}(0.2)(0.0009) \\
-              &= 9.00\times10^{-5}~\mathrm{kg\,m^2}
-\end{align*}
-
-\smallskip
-\textbf{\texttt{caster\_wheel\_link}}, sphere, \mbox{$r=0.02$},
-\mbox{$m=0.1$\,kg}:
-\begin{align*}
-I_{xx}=I_{yy}=I_{zz} &= \frac{2}{5}mr^2 \\
-                     &= \frac{2}{5}(0.1)(0.0004) \\
-                     &= 1.60\times10^{-5}~\mathrm{kg\,m^2}
-\end{align*}
-
-\smallskip
-\textbf{\texttt{lidar\_link}}, cylinder, \mbox{$r=0.03$},
-\mbox{$h=0.01$}, \mbox{$m=0.1$\,kg}:
-\begin{align*}
-I_{xx}=I_{yy} &= \frac{1}{12}m(3r^2+h^2) \\
-              &= \frac{1}{12}(0.1)(0.0028) \\
-              &= 2.33\times10^{-5}~\mathrm{kg\,m^2} \\[4pt]
-I_{zz}        &= \frac{1}{2}mr^2 \\
-              &= \frac{1}{2}(0.1)(0.0009) \\
-              &= 4.50\times10^{-5}~\mathrm{kg\,m^2}
-\end{align*}
-
-
-
-Our wheel is turned by its joint, not inside the link. So in the wheel link's own frame the round axis is still $z$, and the symmetry term stays on $I_{zz}$. Had we rotated the geometry inside the link, it would have moved to $I_{yy}$.
-
-Fig.~\ref{fig:t1_collision} shows the result. We turned on Collision in the RobotModel display and lowered the Alpha to 0.3. The body cylinder sits inside the mesh and nothing is floating or offset. 
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task1/00_task1.png}
-    \caption{Collision overlay in RViz. The Alpha is lowered so the collision
-             primitives show through the meshes.}
-    \label{fig:t1_collision}
-\end{figure}
-
-Fig.~\ref{fig:t1_tf_lidar} and
-Fig.~\ref{fig:t1_tf_wheel} show the terminal output. We put the readings next
-to the joint origins table from the assignment in
-Table~\ref{tab:t1_frames}. Both matched, so there is no
-offset. We also saw that the wheel
-transform reads $-90$ degrees about $x$. That told us the rotation sits on the
-joint and not inside the link, which is what our inertia depends on.
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task1/01_task1.png}
-    \caption{\texttt{tf2\_echo} from \texttt{base\_link} to \texttt{lidar\_link}.}
-    \label{fig:t1_tf_lidar}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task1/02_task2.png}
-    \caption{\texttt{tf2\_echo} from \texttt{base\_link} to
-             \texttt{left\_wheel\_link}. The rotation of $-90$ degrees about
-             $x$ is the wheel joint laying the cylinder flat.}
-    \label{fig:t1_tf_wheel}
-\end{figure}
-
-\begin{table}[H]
-\caption{The two transforms we read back from \texttt{base\_link}, next to the
-         joint origins table in the assignment. All values in metres.}
-\label{tab:t1_frames}
-\centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}l l l@{}}
-\toprule
-\textbf{Child frame} & \textbf{Table says} & \textbf{We read} \\
-\midrule
-\texttt{lidar\_link}
-  & 0.080\ \ 0.000\ \ 0.035
-  & 0.080\ \ 0.000\ \ 0.035 \\
-\addlinespace
-\texttt{left\_wheel\_link}
-  & $-0.030$\ \ 0.130\ \ $-0.020$
-  & $-0.030$\ \ 0.130\ \ $-0.020$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Task 2}
-Before we wrote any code, we sketched out the controller, as we can see in
-Fig.~\ref{fig:t2_controller}. In our sketch we have two beams facing the wall
-and one that goes straight ahead. The two side beams give us the angle of the
-wall. Based on this, we can work out how far from the wall the robot will be
-after driving forward a short way. We compare that to the distance we want to
-hold. The bigger the gap, the harder the robot turns. We decided to hold 45\,cm from the wall. The nose sweeps a circle of 19\,cm when the robot spins, so this leaves a margin of 26\,cm. We wanted more than twice the sweep, so that we had a good margin for the robot to turn anywhere
-along the wall without hitting it.
-
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    scale = 0.80,
-    >     = {Stealth[length=2mm]},
-    beam/.style = {->, thick, blue!55!black},
-    lbl/.style  = {font=\scriptsize},
-    hint/.style = {font=\scriptsize, gray!50!black}
-]
-% ---- the wall, tilted so the wall angle is visible ----
-\draw [very thick] (0.3,-0.9) -- (9.2,1.0);
-\node [hint] at (8.3,-0.3) {wall};
-
-% ---- the robot ----
-\draw [thick, fill=gray!12] (1.7,2.5) circle (0.55);
-\fill (2.2,2.5) circle (1.7pt);
-\node [lbl, above] at (2.35,2.62) {LiDAR};
-
-% ---- the three beams ----
-\draw [beam] (2.2,2.5) -- (2.2,-0.494);
-\node [lbl, left] at (2.1,0.6) {$b$};
-\draw [beam] (2.2,2.5) -- (4.667,0.033);
-\node [lbl, above right] at (3.5,1.35) {$a$};
-\draw [beam] (2.2,2.5) -- (8.3,2.5);
-\node [lbl, above] at (6.6,2.52) {\texttt{front}};
-
-% ---- lookahead, measured above the robot so it stays clear ----
-\draw [dotted, gray] (2.2,2.5) -- (2.2,3.3);
-\draw [dotted, gray] (3.9,2.5) -- (3.9,3.3);
-\draw [<->, red!60!black] (2.2,3.2) -- (3.9,3.2);
-\node [lbl, above] at (3.05,3.2) {\texttt{lookahead}};
-
-% ---- the distance at the end of the lookahead ----
-\draw [dashed, red!60!black] (3.9,2.5) -- (3.9,-0.131);
-\node [lbl, right] at (3.98,1.75) {\texttt{ahead}};
-
-% ---- the distance we hold, drawn only on the open right hand side ----
-\draw [dashed, gray] (5.0,0.894) -- (9.2,1.79);
-\node [hint, above] at (6.9,1.43) {\texttt{wall\_distance}};
-
-% ---- the wall angle ----
-\draw [dashed, gray] (6.8,0.488) -- (8.6,0.488);
-\draw [gray] (7.9,0.488) arc (0:12:1.1);
-\node [lbl] at (8.05,0.72) {$\alpha$};
-
-% ---- what the robot does with it ----
-\node [draw, rounded corners, align=left, font=\scriptsize,
-       inner sep=4pt] at (4.6,-2.0)
-      {$\texttt{ahead} = b\cos\alpha + \texttt{lookahead}\cdot\sin\alpha$ \\[2pt]
-       $\texttt{error} = \texttt{wall\_distance} - \texttt{ahead}$ \\[2pt]
-       $\texttt{turn}  = \texttt{gain}\cdot\texttt{error}$};
-\end{tikzpicture}
-\caption{Controller diagram. On a $180^\circ$ scan, beams $b$ at $-90^\circ$
-         and $a$ at $-45^\circ$
-         give the wall angle $\alpha$. \texttt{ahead} is the distance we will
-         have after driving forward by \texttt{lookahead}. The error is the gap
-         between \texttt{ahead} and \texttt{wall\_distance}, and the turn rate
-         follows it.}
-\label{fig:t2_controller}
-\end{figure}
-
-
-We ask the scan for an angle, and work out which ray that is from the message
-itself, as we can see in Fig.~\ref{lst:t2_scan}. If the scan is narrow there is
-no ray at $-90^\circ$, so we take the closest one it has. We also throw away
-the rays that come back as \texttt{inf}. For each angle we take the shortest
-reading in a small sector, so one bad ray cannot steer the robot.
-
-%TC:ignore
-\begin{figure}[H]
-\begin{minted}{python}
-@staticmethod
-def index(scan, angle):
-    i = int(round((angle - scan.angle_min) / scan.angle_increment))
-    return max(0, min(len(scan.ranges) - 1, i))
-
-def look(self, scan, angle):
-    half = math.radians(self.p("sector"))
-    lo = self.index(scan, angle - half)
-    hi = self.index(scan, angle + half)
-    good = [r for r in scan.ranges[lo:hi + 1]
-            if scan.range_min < r < scan.range_max]
-    return min(good) if good else scan.range_max
-\end{minted}
-\caption{Reading the scan by angle instead of by index, from
-         mazerunner.py.}
-\label{lst:t2_scan}
-\end{figure}
-%TC:endignore
-
-We put everything we tuned in the launch file, as we can see in
-Fig.~\ref{lst:t2_params}. That way we could change the speed or the gain and
-launch again, without touching the node or building it again.
-
-%TC:ignore
-\begin{figure}[H]
-\begin{minted}{xml}
-<node pkg="assignment3" exec="mazerunner" output="screen">
-    <param name="wall_distance" value="0.45"/>
-    <param name="lookahead" value="0.9"/>
-    <param name="speed" value="1.5"/>
-    <param name="gain" value="1.6"/>
-    <param name="max_turn" value="7.2"/>
-    <param name="front_stop" value="0.6"/>
-    <param name="sector" value="8.0"/>
-</node>
-\end{minted}
-\caption{The parameters the launch file sets, from my\_robot.launch.xml.}
-\label{lst:t2_params}
-\end{figure}
-%TC:endignore
-
-We made the node have two states, either paused or running, and one service
-that moves between them, as we show in Fig.~\ref{fig:t2_state}. The service
-gives feedback about which state it switched to, so we could look in the
-terminal to see whether the robot should be moving.
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    state/.style = {rounded corners, draw, align=center,
-                    minimum width=32mm, minimum height=16mm},
-    lbl/.style   = {font=\footnotesize},
-    arrow/.style = {-{Stealth[length=2mm]}}
-]
-\node (init) [circle, fill, inner sep=1.7pt] {};
-\node (paused)  [state, right=7mm of init]
-      {\textbf{PAUSED}\\[2pt]
-       \scriptsize publishes \texttt{Twist(0,0)}\\[-2pt]
-       \scriptsize on every scan};
-\node (running) [state, right=26mm of paused]
-      {\textbf{RUNNING}\\[2pt]
-       \scriptsize publishes the computed\\[-2pt]
-       \scriptsize \texttt{Twist} on every scan};
-
-\draw [arrow] (init) -- (paused);
-\draw [arrow] (paused.north) to [bend left=30]
-      node [lbl, above] {\texttt{/toggle\_pause}} (running.north);
-\draw [arrow] (running.south) to [bend left=30]
-      node [lbl, below] {\texttt{/toggle\_pause}} (paused.south);
-\end{tikzpicture}
-\caption{State machine of \texttt{mazerunner.py}. The filled circle marks the
-         state the node starts in. Both states publish on every scan.}
-\label{fig:t2_state}
-\end{figure}
-
-We called the service twice to check that it goes both ways, as we can see in
-Fig.~\ref{fig:t2_toggle}. The first call answered \texttt{running} and the
-robot started driving. The second one answered \texttt{paused} and it stopped
-where it was.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task2/00_task2.png}
-    \caption{Calling \texttt{/toggle\_pause} from the terminal. The reply tells
-             us which state the node went to.}
-    \label{fig:t2_toggle}
-\end{figure}
-
-Fig.~\ref{fig:t2_flow} shows what the node does every time a scan arrives. The
-same path runs about 30 times a second. Everything the robot does comes from the most recent scan.
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance = 4mm,
-    box/.style  = {rounded corners, draw, align=center, text width=29mm,
-                   inner sep=2.5pt, font=\scriptsize},
-    dec/.style  = {diamond, aspect=2.4, draw, align=center, inner sep=0pt,
-                   font=\scriptsize},
-    term/.style = {rounded corners=5pt, draw, fill=gray!12, align=center,
-                   inner sep=3pt, font=\scriptsize},
-    lbl/.style  = {font=\scriptsize},
-    ar/.style   = {-{Stealth[length=1.8mm]}}
-]
-\node (scan) [term] {scan arrives};
-\node (run)  [dec, aspect=2.8, below=of scan] {running?};
-\node (read) [box, below=of run] {read $b$, $a$ and \texttt{front}};
-\node (calc) [box, below=of read]
-      {work out $\alpha$, \texttt{ahead} and \texttt{error}};
-\node (near) [dec, below=of calc] {wall close ahead?};
-\node (full) [box, below=of near] {turn at full rate};
-\node (out)  [box, below=of full] {limit turn, slow down};
-\node (pub)  [term, below=of out] {send \texttt{Twist}};
-\node (zero) [box, text width=17mm, left=8mm of calc]
-      {send zero\\\texttt{Twist}};
-
-\draw [ar] (scan) -- (run);
-\draw [ar] (run)  -- node [lbl, right] {yes} (read);
-\draw [ar] (run.west) -| node [lbl, above left] {no} (zero.north);
-\draw [ar] (read) -- (calc);
-\draw [ar] (calc) -- (near);
-\draw [ar] (near) -- node [lbl, right] {yes} (full);
-\draw [ar] (full) -- (out);
-\draw [ar] (near.east) -- node [lbl, above] {no} ++(10mm,0) |- (out.east);
-\draw [ar] (out) -- (pub);
-\draw [ar] (zero.south) |- (pub.west);
-\end{tikzpicture}
-\caption{Decision logic of \texttt{mazerunner.py}, run once for every LiDAR
-         scan. On a $180^\circ$ scan, $b$ is the distance to the side at
-         $-90^\circ$, $a$ the one at
-         $-45^\circ$ and \texttt{front} the one straight ahead. $\alpha$ is the
-         angle of the wall, \texttt{ahead} the distance we will have after
-         driving forward, and \texttt{error} the gap between that and the
-         distance we want to hold.}
-\label{fig:t2_flow}
-\end{figure}
-
-Fig.~\ref{fig:t2_maze} shows the robot part way round the maze, with the wall
-on its right side. It drives a lap in about 33 seconds.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task2/01_task2.png}
-    \caption{The robot following the right hand wall in \texttt{maze.world}.}
-    \label{fig:t2_maze}
-\end{figure}
-
-\subsection{Task 3}
-
-
-The node asks the scan how far out it can see, and takes the side ray from
-there, as we can see in Fig.~\ref{lst:t3_side}.
-
-%TC:ignore
-\begin{figure}[H]
-\begin{minted}{python}
-@staticmethod
-def available(scan, angle):
-    return max(scan.angle_min, min(scan.angle_max, angle))
-
-side = self.available(scan, -math.pi / 2)
-\end{minted}
-\caption{Taking the side ray at the deepest angle the scan has, from
-         mazerunner.py. A $180^\circ$ scan gives $-90^\circ$, a $120^\circ$
-         scan gives $-60^\circ$.}
-\label{lst:t3_side}
-\end{figure}
-%TC:endignore
-
-We did as the task asked and kept the rays 4 degrees apart in all three runs,
-so the field of view was the only thing that changed. We made the field of
-view and the ray count Xacro arguments, so we switched between the three scans
-from the launch file without editing the model.
-Fig.~\ref{lst:t3_xacro} shows how the sensor gets them.
-
-%TC:ignore
-\begin{figure}[H]
-\begin{minted}{xml}
-<!-- parameters.xacro -->
-<xacro:property name="lidar_rays" value="${$(arg lidar_rays)}"/>
-<xacro:property name="lidar_half_fov" value="${radians($(arg lidar_fov)) / 2}"/>
-
-<!-- lidar.xacro -->
-<horizontal>
-    <samples>${lidar_rays}</samples>
-    <min_angle>${-lidar_half_fov}</min_angle>
-    <max_angle>${lidar_half_fov}</max_angle>
-</horizontal>
-\end{minted}
-\caption{The field of view and ray count arriving at the sensor as Xacro
-         arguments.}
-\label{lst:t3_xacro}
-\end{figure}
-%TC:endignore
-
-Table~\ref{tab:t3_fov} shows what we predicted and what happened.
-
-\begin{table}[H]
-\caption{The three scans we ran. The prediction column was written before the
-         run, the observation column after it.}
-\label{tab:t3_fov}
-\centering
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}p{13mm} p{25mm} p{25mm} p{17mm}@{}}
-\toprule
-\textbf{Scan} & \textbf{Prediction} & \textbf{Observation} &
-\textbf{What changed} \\
-\midrule
-
-$180^\circ$, 45 rays &
-We don't think this will break. We had tuned the robot on this scan, so this
-run is our starting point. &
-It ran smoothly and did not hit any walls. &
-Nothing. \\
-\addlinespace
-
-$120^\circ$, 30 rays &
-The scan cannot see straight out to the side. The robot will read the wall at
-an angle, and we think the robot will follow it worse and potentially hit the
-corners. &
-It almost hit the wall, and then ended up turning around and going in
-the opposite direction. The robot did this in a loop and could not finish the
-maze since it went back and forth. &
-We made the gap between ray $b$ and ray $a$ follow the scan, instead of a fixed 45 degrees. \\
-\addlinespace
-
-$360^\circ$, 90 rays &
-Nothing should change. We only read three angles and they all point forwards,
-so the rays behind the robot are never read. &
-It ran smoothly as before. &
-Nothing. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-After the $120^\circ$ run we changed where the second ray goes, as we can see
-in Fig.~\ref{lst:t3_gap}. The gap now follows the side ray, so both rays stay
-on the same wall. We ran $120^\circ$ again and the robot followed the wall
-without turning around.
-
-%TC:ignore
-\begin{figure}[H]
-\begin{minted}{python}
-theta = -side / 2
-b = self.look(scan, side)
-a = self.look(scan, side + theta)
-\end{minted}
-\caption{The fix after the $120^\circ$ run. Ray $a$ lands at $-45^\circ$ on a
-         $180^\circ$ scan and $-30^\circ$ on a $120^\circ$ scan.}
-\label{lst:t3_gap}
-\end{figure}
-%TC:endignore
-
-\subsection{Task 4}
-
-We spawned the robot at zero and let it drive for about 64 seconds, which is
-around two laps. Then we froze it and read \texttt{/odom} and the Gazebo pose,
-as we can see in Fig.~\ref{fig:t4_r1_odom}, Fig.~\ref{fig:t4_r1_gz} and
-Fig.~\ref{fig:t4_r2}. We did this twice. The odometry gives the heading as
-four numbers, not an angle. We turned it into a yaw with
-\begin{align*}
-\text{yaw} = 2\operatorname{atan2}(q_z, q_w)
-\end{align*}
-Table~\ref{tab:t4_drift} shows both runs.
-
-\begin{table}[H]
-\caption{What the robot believed, what was true, and the gap between them.}
-\label{tab:t4_drift}
-\centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}l r r r@{}}
-\toprule
- & $x$ [m] & $y$ [m] & yaw [$^\circ$] \\
-\midrule
-\multicolumn{4}{@{}l}{\textbf{Run 1}} \\
-\quad odom believed & $-2.815$ & $0.365$  & $23.40$ \\
-\quad Gazebo truth  & $1.250$  & $-0.512$ & $1.48$ \\
-\quad gap           & $-4.065$ & $0.877$  & $21.92$ \\
-\addlinespace
-\multicolumn{4}{@{}l}{\textbf{Run 2}} \\
-\quad odom believed & $-0.515$ & $1.070$  & $-25.95$ \\
-\quad Gazebo truth  & $3.757$  & $-0.957$ & $-58.17$ \\
-\quad gap           & $-4.272$ & $2.027$  & $32.22$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The robot was 4.16\,m out of place in the first run and 4.73\,m out in the
-second, and its heading was out by 22 and 32 degrees. The plugin builds the
-odometry from the wheel radius $r$, the separation $L$ and the wheel speeds:
-\begin{align*}
-v = \frac{r(\omega_R + \omega_L)}{2}, \qquad
-\omega = \frac{r(\omega_R - \omega_L)}{L}
-\end{align*}
-Our $r$ and $L$ come from the same Xacro properties the wheels are built from,
-so the error is in the wheel speeds. The wheels turn more than the robot moves.
-The error went the same way in both runs. The robot turns the same way at
-every corner, so the errors add up instead of cancelling out.
-
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task4/00_round1.png}
-    \caption{Run 1, what the robot believed on \texttt{/odom}.}
-    \label{fig:t4_r1_odom}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task4/01_round1.png}
-    \caption{Run 1, the true pose from Gazebo.}
-    \label{fig:t4_r1_gz}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task4/02_round2.png}
-    \caption{Run 2, both readings in the same terminal.}
-    \label{fig:t4_r2}
-\end{figure}
-
-\section{Reflection}
-
-For Task 2 we had a fun time debugging the lidar scanner, as the scan was
-lagging behind the robot when it was driving, as we can see in
-Fig.~\ref{fig:t2_bug}. We used over two hours debugging this and tried a lot of
-different things, but none of them worked. Finally we got a tip from Claude
-that we could make the Gazebo window smaller. We tried it and it just worked,
-and the scan was now following the robot, as we can see in
-Fig.~\ref{fig:t2_fix}. It turned out that the GPU cost scales with the pixel
-count, so fewer pixels made the GPU work less, and that was enough for the scan
-to keep up with the robot.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task2/02_task2bugGazebo.png}
-    \caption{The scan lagging behind the robot. The blue fan is drawn where the
-             robot was a moment earlier, not where it is now.}
-    \label{fig:t2_bug}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth]{fig/Task2/03_task3fix.png}
-    \caption{The same run in a smaller Gazebo window.}
-    \label{fig:t2_fix}
-\end{figure}
-
-For the recording of the video, we also had some problems. We first tried to use a program called Peek to record, but this gave us a laggy recording as it used a lot of GPU space. We then figured out that we could use the Gazebo built-in recorder, and this worked a lot better, and it was less laggy. 
-
-\section{Use of AI}
-
-\end{document}
+We used AI for debugging code and trying to understand why our visualisation of the lidar sensor rays was lagging behind the robot.  
 
 \end{document}
