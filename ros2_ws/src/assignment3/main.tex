@@ -66,7 +66,7 @@
 
 \begin{document}
 
-\title{ACIT4820: Assignment 3 \\[4pt] \normalsize \textit{Total words: }}
+\title{ACIT4820: Assignment 3 \\[4pt] \normalsize \textit{Total words:1743 }}
 
 \author{
     \IEEEauthorblockN{Felix Boehm}
@@ -84,6 +84,22 @@ from there. It is quite simple and only asks how far the wall is right now and n
 Fig.~\ref{fig:concept} shows the whole problem in one drawing. The robot follows the wall on its right, and sees as far as the scan reaches. It reads three distances, works out how far off 45\,cm it will be after driving on a bit, and turns by that much. Then the next scan arrives and
 it does the same again, about 30 times a second.
 
+For Task 1 most of the robot specs were given to us. One thing we had to decide
+was how Gazebo finds the mesh files we added. We ended up using
+\texttt{file://\$(find assignment3)/meshes} instead of \texttt{package://},
+because our xacro fills in the full path before Gazebo sees it.
+In Task 2 we had to make some more decisions. We ended up having two rays on the
+wall instead of one as we originally had planned. Having two rays helps the robot
+to know if it is driving along the wall or towards it. This helps the robot turn
+earlier so it does not hit the wall. The robot is also designed to look a bit
+forward instead of only where the robot is now, so the turn can start before the
+robot has drifted. We also needed to decide how far the robot should be from the
+wall while driving. The nose sweep according to the task is 19\,cm when the robot
+spins on the spot, and we decided that the robot had 45\,cm clearance from the
+wall. This leaves 26\,cm of margin, so the robot has plenty of space to turn
+anywhere along the wall. This might be a conservative choice, but we wanted to be
+on the safe side.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{fig/Task1/03_task.jpg}
@@ -93,17 +109,18 @@ it does the same again, about 30 times a second.
     \label{fig:concept}
 \end{figure}
 
-The first thing we added was a second ray on the wall. Two rays help us get the angle of the wall, not only the distance. They tell the robot if it is
-driving along the wall or towards it, and that helps the robot turn before it hits the wall. We ask the scan for an angle, and the node works out which ray that is from the message itself. So it does not matter how wide the scan is. For each of the three directions we read five rays and keep the shortest one. This helps so that one bad
-reading does not send the robot into the wall. We made the launch file more plug and play by putting everything we tune
-there as arguments. This made it easy to test our
-robot without having to manually go into the code and change each magic number.
+In Task 3 the gap between the two rays was originally set to 45 degrees. We found
+that this worked on a 180 degree scan, but on a 120 degree scan the second ray did
+not scan the wall and ended up looking straight ahead. We decided to make the gap
+more modular instead of a fixed 45 degrees, and ended up making the gap half the
+angle of the side ray. So this gave the robot 45 degrees when we do a 180 degree
+scan and 30 degrees on a 120 degree scan.
 
 \section{Results}
 
 \subsection{Task 1}
 We calculated the inertia for each link. We took the shape and the size
-from the collision tag. Our wheel also had the same
+from the collision tag. Our wheels also had the same
 numbers as the example in the assignment text. That told us the masses and the
 dimensions were correct. 
 
@@ -221,8 +238,8 @@ Fig.~\ref{fig:t2_controller}. In our sketch we have two beams facing the wall
 and one that goes straight ahead. The two side beams give us the angle of the
 wall. Based on this, we can work out how far from the wall the robot will be
 after driving forward a short way. We compare that to the distance we want to
-hold. The bigger the gap, the harder the robot turns. We decided to hold 45\,cm from the wall. The nose sweeps a circle of 19\,cm when the robot spins, so this leaves a margin of 26\,cm. We wanted more than twice the sweep, so that we had a good margin for the robot to turn anywhere
-along the wall without hitting it.
+hold, which is the 45\,cm we decided. The bigger the gap, the harder the
+robot turns.
 
 
 \begin{figure}[H]
@@ -337,10 +354,7 @@ where it was.
 \end{figure}
 
 Fig.~\ref{fig:t2_flow} shows what the node does every time a scan arrives. The
-same path runs about 30 times a second. Everything the robot does comes from the most recent scan.
-The turn has two thresholds instead of one as we originally had. We changed
-this after we looked at micro lecture T5. So it starts when the front reading
-is under 60\,cm and it ends when it goes over 90\,cm.
+same path runs about 30 times a second. Everything the robot does comes from the most recent scan. The corner turn has two thresholds instead of one as we originally had. We changed this after micro lecture T5. The robot starts turning when the wall is closer than 60\,cm, and then it keeps turning until it is 90\,cm away from the wall. This made the turn smoother.
 
 \begin{figure}[H]
 \centering
@@ -548,9 +562,9 @@ v = \frac{r(\omega_R + \omega_L)}{2}, \qquad
 \end{align*}
 Our $r$ and $L$ come from the same Xacro properties the wheels are built from,
 so the error is in the wheel speeds. The wheels turn more than the robot moves.
-The error went the same way in both runs. The robot turns the same way at
-every corner, so the errors add up instead of cancelling out.
-
+Every turn drags the wheels sideways a little, and the plugin never sees that
+slip. The error went the same way in both runs. The robot turns the same way at every
+corner, so the errors add up. If it turned both ways they would partly cancel.
 
 
 \begin{figure}[H]
@@ -613,19 +627,18 @@ We fixed this as we showed in the results section by making the gaps
 between the two rays follow the scan. For the recording of the
 video, we also had some problems. We first tried to use a program
 called Peek to record, but this gave us a laggy recording as it used
-a lot of GPU space. We then figured out that we could use the Gazebo
+a lot of GPU memory. We then figured out that we could use the Gazebo
 built-in recorder, and this worked a lot better, and it was less laggy.
 
 We also looked into different ways of solving this assignment
-based on the micro lectures, such as potential fields.
+based on the micro lectures, for example using potential fields.
 One downside of our implementation is that
 it will potentially orbit forever if it meets an island.
 The potential fields approach does not work well if it meets
-a local minimum. We decided to keep our implementation
-as it was already working for the maze, and it keeps
-our solution relatively simple but working. 
+a local minimum. We decided to keep our implementation. It already got around
+the maze, and it handled the cases this assignment asked for.
+We will probably need to update it for Assignment 4.
 
 \section{Use of AI}
 We used AI for debugging code and trying to understand why our visualisation of the lidar sensor rays was lagging behind the robot.  
-
 \end{document}
