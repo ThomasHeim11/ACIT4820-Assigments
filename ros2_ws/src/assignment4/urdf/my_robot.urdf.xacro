@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- Top level of the robot description. This file holds no
+content of its own, it only pulls the parts together in order.-->
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--Scan shape of the LiDAR. Set from the launch file so the different
+  configurations can be swapped without editing the model.-->
+  <xacro:arg name="lidar_fov" default="360"/>
+  <xacro:arg name="lidar_rays" default="360"/>
+
+  <!--Dimensions and materials. Must come first, since the parts below
+  refer to these values.-->
+  <xacro:include filename="parameters.xacro"/>
+
+  <!--The robot: wheel macro, links and joints.-->
+  <xacro:include filename="my_robot_core.xacro"/>
+
+  <!--Gazebo specific settings: friction and the simulation plugins.-->
+  <xacro:include filename="gazebo_control.xacro"/>
+
+  <!--LiDAR link, joint and sensor.-->
+  <xacro:include filename="lidar.xacro"/>
+
+</robot>

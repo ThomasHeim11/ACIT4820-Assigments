@@ -1,0 +1,131 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="default">
+
+    <plugin filename="gz-sim-physics-system"           name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"     name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-contact-system"           name="gz::sim::systems::Contact"/>
+    <plugin filename="gz-sim-sensors-system"           name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>100 100</size></plane></geometry>
+          <material><diffuse>0.4 0.4 0.4 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name='maze'>
+      <static>true</static>
+      <link name='maze_body'>
+        <visual name='wall_0_visual'>
+          <pose>0 1.5 0.5 0 0 0</pose>
+          <geometry><box><size>10 1 1</size></box></geometry>
+        </visual>
+        <collision name='wall_0_collision'>
+          <pose>0 1.5 0.5 0 0 0</pose>
+          <geometry><box><size>10 1 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_1_visual'>
+          <pose>0 -1.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </visual>
+        <collision name='wall_1_collision'>
+          <pose>0 -1.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_2_visual'>
+          <pose>2.5 -4 0.5 0 0 0</pose>
+          <geometry><box><size>1 6 1</size></box></geometry>
+        </visual>
+        <collision name='wall_2_collision'>
+          <pose>2.5 -4 0.5 0 0 0</pose>
+          <geometry><box><size>1 6 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_3_visual'>
+          <pose>-2.5 -6 0.5 0 0 0</pose>
+          <geometry><box><size>1 10 1</size></box></geometry>
+        </visual>
+        <collision name='wall_3_collision'>
+          <pose>-2.5 -6 0.5 0 0 0</pose>
+          <geometry><box><size>1 10 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_4_visual'>
+          <pose>0 -6.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </visual>
+        <collision name='wall_4_collision'>
+          <pose>0 -6.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_5_visual'>
+          <pose>-5.5 -6 0.5 0 0 0</pose>
+          <geometry><box><size>1 16 1</size></box></geometry>
+        </visual>
+        <collision name='wall_5_collision'>
+          <pose>-5.5 -6 0.5 0 0 0</pose>
+          <geometry><box><size>1 16 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_6_visual'>
+          <pose>5.5 -4 0.5 0 0 0</pose>
+          <geometry><box><size>1 12 1</size></box></geometry>
+        </visual>
+        <collision name='wall_6_collision'>
+          <pose>5.5 -4 0.5 0 0 0</pose>
+          <geometry><box><size>1 12 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_7_visual'>
+          <pose>3 -9.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </visual>
+        <collision name='wall_7_collision'>
+          <pose>3 -9.5 0.5 0 0 0</pose>
+          <geometry><box><size>4 1 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_8_visual'>
+          <pose>-2.5 -13.5 0.5 0 0 0</pose>
+          <geometry><box><size>5 1 1</size></box></geometry>
+        </visual>
+        <collision name='wall_8_collision'>
+          <pose>-2.5 -13.5 0.5 0 0 0</pose>
+          <geometry><box><size>5 1 1</size></box></geometry>
+        </collision>
+
+        <visual name='wall_10_visual'>
+          <pose>0.5 -11.5 0.5 0 0 0</pose>
+          <geometry><box><size>1 5 1</size></box></geometry>
+        </visual>
+        <collision name='wall_10_collision'>
+          <pose>0.5 -11.5 0.5 0 0 0</pose>
+          <geometry><box><size>1 5 1</size></box></geometry>
+        </collision>
+
+        <material><diffuse>0.1 0.1 0.1 1</diffuse></material>
+      </link>
+    </model>
+  </world>
+</sdf>
