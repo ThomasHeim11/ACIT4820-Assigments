@@ -15,6 +15,7 @@ the explorer to this same file.-->
 <let name="world_path" value="$(var pkg_share)/worlds/maze.world"/>
 <let name="bridge_config_path" value="$(var pkg_share)/config/gz_bridge.yaml"/>
 <let name="slam_config_path" value="$(var pkg_share)/config/slam.yaml"/>
+<let name="nav2_config_path" value="$(var pkg_share)/config/nav2.yaml"/>
 <let name="rviz_config" value="$(var pkg_share)/rviz/urdf_config.rviz"/>
 
 <!--gz_server computes the physics, gz_client draws it. The client is forced
@@ -43,13 +44,22 @@ used in the bridge config.-->
     <param name="use_sim_time" value="true"/>
 </node>
 
-<!--Builds the map from /scan and the odometry. The node has to be named
-slam_toolbox, since that is the key the parameter file is written under.-->
-<node pkg="slam_toolbox" exec="async_slam_toolbox_node"
-      name="slam_toolbox" output="screen">
-    <param from="$(var slam_config_path)"/>
-    <param name="use_sim_time" value="true"/>
-</node>
+<!--Builds the map from /scan and the odometry. Included from slam_toolbox's
+own launch file, because the node is a lifecycle node in Jazzy and that file
+is what configures and activates it.-->
+<include file="$(find-pkg-share slam_toolbox)/launch/online_async_launch.py">
+    <arg name="slam_params_file" value="$(var slam_config_path)"/>
+    <arg name="use_sim_time" value="true"/>
+</include>
+
+<!--The Nav2 stack: planner, controller, behaviours and the BT navigator.
+navigation_launch.py and not bringup_launch.py, because slam_toolbox already
+provides the map and the map->odom transform, so map_server and AMCL are
+not wanted.-->
+<include file="$(find-pkg-share nav2_bringup)/launch/navigation_launch.py">
+    <arg name="params_file" value="$(var nav2_config_path)"/>
+    <arg name="use_sim_time" value="true"/>
+</include>
 
 <node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)" if="$(var rviz)">
     <param name="use_sim_time" value="true"/>
