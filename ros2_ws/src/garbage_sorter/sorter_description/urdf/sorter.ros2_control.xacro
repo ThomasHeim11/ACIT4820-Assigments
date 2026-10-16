@@ -1,33 +1,33 @@
 <?xml version="1.0"?>
-<!--Connect the arms joint to ros2_control, and 
-loads the Gazebo plugin that runs it-->
+<!--Connects the arm's joints to ros2_control, and loads the Gazebo plugin
+that runs it.-->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<!--UR ow list of the six joints and their interface. Resuse so we dont write all
-the joint ourself-->
-<xacro:include filename="$(find ur_description)/urdf/inc/ur_joint_control.xacro"/>
+  <!--UR's own list of the six joints and their interfaces. Reused so we
+  don't write out all the joints ourselves.-->
+  <xacro:include filename="$(find ur_description)/urdf/inc/ur_joint_control.xacro"/>
 
-<xacro:macro name="sorter_ros2_contol" params="tf_prefix controllers_file">
+  <xacro:macro name="sorter_ros2_control" params="tf_prefix controllers_file">
 
-<!--The hardware is Gazebo. In a real robot this plugin would be
-URs drived instrad and nothig else would change-->
-<ros2_control name = "${tf_prefix}ur" type="system">
-    <hardware>
-        <plugin>gz_ros2_control/GazeboSimSytem</plugin>
-    </hardware>
-    <!--The six joint each with position/velocity/effor interface
-    and sorthing angle-->
-    <xacro:ur_joint_control_description tf_prefix="${tf_prefix}"/>
-</ros2_control>
+    <!--The hardware is Gazebo. On a real robot this plugin would be UR's
+    driver instead, and nothing else would change.-->
+    <ros2_control name="${tf_prefix}ur" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+      <!--The six joints, each with position/velocity/effort interfaces
+      and a starting angle.-->
+      <xacro:ur_joint_control_description tf_prefix="${tf_prefix}"/>
+    </ros2_control>
 
-<!--Loads gz_ros_control into Gazebo. It reads the tag above and start the 
-controller_manger with the controllers in the file-->
-<gazebo>
-    <plugin filename="gz_ros2_control-system"
-        name="gazebo_ros2_control::GazeboSimRos2ControlPlugin">
-    <parameters>${controllers_file}</parameters>
-    </plugin>
-</gazebo>
+    <!--Loads gz_ros2_control into Gazebo. It reads the tag above and starts
+    the controller_manager with the controllers in the file.-->
+    <gazebo>
+      <plugin filename="gz_ros2_control-system"
+              name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>${controllers_file}</parameters>
+      </plugin>
+    </gazebo>
 
-</xacro:macro>
+  </xacro:macro>
 </robot>
