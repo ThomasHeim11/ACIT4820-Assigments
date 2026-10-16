@@ -1,0 +1,25 @@
+# Controllers run by the controller_manager that gz_ros2_control starts.
+controller_manager:
+  ros__parameters:
+    update_rate: 100   # Hz. How often the controllers run.
+
+    # Publishes the joint angles on /joint_states, so
+    # robot_state_publisher can build the TF tree.
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # Moves the joints along a trajectory. This is what MoveIt sends to.
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+    command_interfaces: [position]           # we send angles
+    state_interfaces: [position, velocity]   # we read angles and speeds
