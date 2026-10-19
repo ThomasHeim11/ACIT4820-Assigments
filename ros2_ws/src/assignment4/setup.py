@@ -34,6 +34,7 @@ setup(
         'console_scripts': [
             'wheel_publisher = assignment4.wheel_publisher:main',
             'mazerunner = assignment4.mazerunner:main',
+            'explorer = assignment4.explorer:main',
         ],
     },
 )

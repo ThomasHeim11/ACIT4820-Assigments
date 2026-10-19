@@ -8,6 +8,8 @@ the explorer to this same file.-->
     description="Run Gazebo without the GUI client"/>
 <arg name="rviz" default="true"
     description="Start RViz alongside Gazebo"/>
+<arg name="explore" default="false"
+    description="Explore the maze on its own with explorer.py"/>
 
 <!--Paths resolved from the installed package.-->
 <let name="pkg_share" value="$(find-pkg-share assignment4)"/>
@@ -60,6 +62,14 @@ not wanted.-->
     <arg name="params_file" value="$(var nav2_config_path)"/>
     <arg name="use_sim_time" value="true"/>
 </include>
+
+<!--Finds frontiers on the map and sends them to Nav2 as goals. Only
+started with explore:=true, so Task 2's manual goals still work.-->
+<group if="$(var explore)">
+    <node pkg="assignment4" exec="explorer" output="screen">
+        <param name="use_sim_time" value="true"/>
+    </node>
+</group>
 
 <node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)" if="$(var rviz)">
     <param name="use_sim_time" value="true"/>

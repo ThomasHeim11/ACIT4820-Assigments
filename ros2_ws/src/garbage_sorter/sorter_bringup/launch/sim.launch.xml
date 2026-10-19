@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<!--Brings up the garbage sorter in simulation: Gazebo with the sorting
+cell, the robot spawned into it, its controllers, and RViz.-->
+
+<launch>
+<arg name="headless" default="false"
+    description="Run Gazebo without the GUI client"/>
+<arg name="rviz" default="true"
+    description="Start RViz alongside Gazebo"/>
+
+<!--Paths resolved from the installed packages. The robot lives in
+sorter_description, everything else in sorter_bringup.-->
+<let name="description_share" value="$(find-pkg-share sorter_description)"/>
+<let name="bringup_share" value="$(find-pkg-share sorter_bringup)"/>
+<let name="xacro_path" value="$(var description_share)/urdf/sorter.urdf.xacro"/>
+<let name="world_path" value="$(var bringup_share)/worlds/sorting.world"/>
+<let name="controllers_path" value="$(var bringup_share)/config/controllers.yaml"/>
+
+<!--gz_server computes the physics, gz_client draws it. Both use Gazebo's
+default render engine, ogre2.-->
+<executable cmd="gz sim -s -r $(var world_path)"
+            name="gz_server" output="screen"/>
+<executable cmd="gz sim -g" name="gz_client"
+            output="screen" unless="$(var headless)"/>
+
+<!--Expands the xacro and publishes /robot_description and the TF tree.
+The controllers file is passed in here, so the robot description does not
+depend on the bringup package.-->
+<node pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description"
+        value="$(command 'xacro $(var xacro_path) controllers_file:=$(var controllers_path)')"
+        type="str"/>
+    <param name="use_sim_time" value="true"/>
+</node>
+
+<!--Spawns the robot from /robot_description. No height offset, since the
+torso is fixed to the world at the origin.-->
+<node pkg="ros_gz_sim" exec="create"
+    args="-topic robot_description -name sorter"/>
+
+<!--Only the clock needs bridging. The joints go through ros2_control,
+not the bridge.-->
+<node pkg="ros_gz_bridge" exec="parameter_bridge"
+    args="/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"/>
+
+<!--Starts the two controllers from controllers.yaml inside the
+controller_manager that gz_ros2_control runs. The spawners wait until it
+is up.-->
+<node pkg="controller_manager" exec="spawner"
+    args="joint_state_broadcaster"/>
+<node pkg="controller_manager" exec="spawner"
+    args="joint_trajectory_controller"/>
+
+<node pkg="rviz2" exec="rviz2" if="$(var rviz)">
+    <param name="use_sim_time" value="true"/>
+</node>
+</launch>
