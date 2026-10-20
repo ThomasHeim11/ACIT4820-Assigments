@@ -28,10 +28,8 @@ test.tex
 # --- Working notes ---
 ros2_ws/src/*/todo.md
 
-
-ros2_ws/src/garbage_sorter/main.tex
-ros2_ws/src/garbage_sorter/reportDesciption.md
-ros2_ws/src/garbage_sorter/fig/
+# --- Exam project, kept in its own repository ---
+ros2_ws/src/garbage_sorter/
 
 # --- Course material (uncomment to keep the lecturer's PDF out of the repo) ---
 # Assignment 1 ACiT4820.pdf
